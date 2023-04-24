@@ -7,15 +7,43 @@
     <title>Client</title>
 </head>
 <body>
-    <div id="message"></div>
+    <div id="message" style="width: 100%; background-color: gray;min-height: 100px;"></div>
+    <br>
+    <button id="login-btn">Login</button>
+    <br>
+    <label for="ms-box">Boardcast Message:</label>
+    <input type="text" id="ms-box" name="ms-box"><br>
+    <button id="send-btn">send</button>
+
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
         const socket = io("ws://localhost:5001");
+
         socket.emit("greeting",{ status:200, message:"Hello Server"});
+
         socket.on("welcome", (...args) => {
             let m = args[0];
-            document.getElementById("message").innerHTML = `<h3>Server: Status ${m.status} Message ${m.message}</h3>`
+            document.getElementById("message").innerHTML += `<h3>Server: Status ${m.status} Message: ${m.message}</h3>`
         });
+
+        socket.on("broadcast-all", (...args) => {
+            let m = args[0];
+            document.getElementById("message").innerHTML += `<h3>Sender:${m.sender} Message: ${m.message}</h3>`
+        });
+
+        document.getElementById("login-btn").addEventListener('click',()=>{
+            socket.emit("login",'user1','password1',(response)=>{
+                document.getElementById("message").innerHTML += `<h3>Server: Status ${response.status} Message: ${response.message}</h3>`
+            });
+        });
+
+        document.getElementById("send-btn").addEventListener('click',()=>{
+            let message = document.getElementById("ms-box").value;
+            socket.emit("broadcast",message,(response)=>{
+                console.log(response.status,response.message);
+            });
+        });
+
     </script>
 </body>
 </html>
