@@ -20,3 +20,10 @@ exports.joinGroup = (socket, userId, groupId) =>{
 exports.getGroups = () =>{
     return groups;
 };
+
+exports.getGroupFromId = (groupId) =>{
+    groupId = parseInt(groupId, 10);
+    if(groups.has(groupId)){
+        return groupId.toString();
+    }
+}

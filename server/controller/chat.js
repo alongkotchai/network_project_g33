@@ -1,5 +1,6 @@
 const {createMessage} = require('../db/db');
 const {getUserFromId} = require('./user');
+const {getGroupFromId} = require('./group');
 
 let messages = Array();
 
@@ -16,7 +17,16 @@ exports.sendMessage = (io, senderId, receiverId, message, is_direct) =>{
             return true;
         }
     }else{
-        return true;
+        const targetId = getGroupFromId(receiverId);
+        if(targetId){
+            let timestamp = new Date();
+            timestamp = timestamp.toISOString();
+            let mes = {senderId:senderId,message:message,timestamp:timestamp};
+            io.in('g-' + targetId).emit("receiveMessage",mes);
+            mes.receiverId = receiverId;
+            messages.push(mes);
+            return true;
+        }
     }
 };
 
