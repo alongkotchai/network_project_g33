@@ -104,6 +104,14 @@ io.on("connection", (socket) => {
     })
   });
 
+  socket.on('setBackground', (callback) =>{
+    console.log('sendMessage');
+    callback({
+      status:200,
+      message: "sendMessage"
+    })
+  });
+
 
 });
 
