@@ -17,7 +17,7 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io("ws://localhost:5001");
+        const socket = io("ws://localhost:5001",{auth: {token: "1"}});
 
         socket.emit("greeting",{ status:200, message:"Hello Server"});
 
