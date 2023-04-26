@@ -36,7 +36,7 @@ exports.authUser = (username, password, socketId) =>{
         index += 1;
         session.set(index,{username:username,nickname:username,socketId:socketId});
         const temp = session.get(index);
-        return {token:index.toString(), username:temp.username, nickname:temp.nickname};
+        return {token:index.toString(), username:temp.username, userId:0, nickname:temp.nickname};
     }
 };
 
@@ -52,7 +52,7 @@ exports.registerUser = (username, password, nickname, socketId) =>{
     if(username && password){
         index += 1;
         session.set(index,{username:username,nickname:nickname,socketId:socketId});
-        return {token:index.toString(), username:username, nickname:nickname};
+        return {token:index.toString(),userId:0, username:username, nickname:nickname};
     }
 };
 
@@ -62,7 +62,7 @@ exports.setNickname = (token, nickname) =>{
         let temp = session.get(token);
         temp.nickname = nickname;
         session.set(token,temp);
-        return {username:temp.username, nickname:temp.nickname};
+        return {nickname:temp.nickname};
     }
 };
 

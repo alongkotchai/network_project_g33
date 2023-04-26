@@ -11,7 +11,7 @@ exports.sendMessage = (io, senderId, receiverId, message, is_direct) =>{
             let timestamp = new Date();
             timestamp = timestamp.toISOString();
             let mes = {senderId:senderId,message:message,timestamp:timestamp};
-            io.to(target.socketId).emit("receiveMessage",mes);
+            io.to(target.socketId).emit("directMessage",mes);
             // createMessage(senderId,receiverId,parseInt(is_direct, 10),message);
             mes.receiverId = receiverId;
             messages.push(mes);
@@ -22,8 +22,8 @@ exports.sendMessage = (io, senderId, receiverId, message, is_direct) =>{
         if(targetId){
             let timestamp = new Date();
             timestamp = timestamp.toISOString();
-            let mes = {senderId:senderId,message:message,timestamp:timestamp};
-            io.in('g-' + targetId).emit("receiveMessage",mes);
+            let mes = {senderId:senderId,groupId:targetId,message:message,timestamp:timestamp};
+            io.in('g-' + targetId).emit("groupMessage",mes);
             mes.receiverId = receiverId;
             messages.push(mes);
             return true;

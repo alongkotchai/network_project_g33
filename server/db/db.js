@@ -10,21 +10,22 @@ let db = new sqlite3.Database('./db/app.db', (err) => {
 });
 
 db.serialize(() => {
+  console.log('create tables');
   // Queries scheduled here will be serialized.
   db.run(`CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
             username TEXT NOT NULL  UNIQUE,
-            nickname TEXT NOT NULL  UNIQUE,
+            nickname TEXT NOT NULL,
             password TEXT NOT NULL)`)
-    .run(`CREATE TABLE IF NOT EXISTS rooms (
-            room_id INTEGER PRIMARY KEY,
-            room_name TEXT NOT NULL UNIQUE,
-            owner_id INTEGER NOT NULL,
-            FOREIGN KEY (owner_id)
+    .run(`CREATE TABLE IF NOT EXISTS groups (
+            group_id INTEGER PRIMARY KEY,
+            group_name TEXT NOT NULL,
+            group_owner INTEGER NOT NULL,
+            group_color TEXT NOT NULL,
+            FOREIGN KEY (group_owner)
               REFERENCES users (user_id) 
             )`)
     .run(`CREATE TABLE IF NOT EXISTS messages (
-            message_id INTEGER PRIMARY KEY,
             sender_id INTEGER NOT NULL,
             receiver_id INTEGER NOT NULL,
             is_direct INTEGER DEFAULT 0 NOT NULL,
@@ -32,16 +33,14 @@ db.serialize(() => {
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (sender_id) REFERENCES users (user_id)
             )`)
-    .run(`CREATE TABLE IF NOT EXISTS join_rooms (
-            room_id INTEGER NOT NULL,
+    .run(`CREATE TABLE IF NOT EXISTS join_groups(
+            group_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
-            FOREIGN KEY (room_id)
-              REFERENCES rooms (room_id),
+            FOREIGN KEY (group_id)
+              REFERENCES groups (group_id),
             FOREIGN KEY (user_id)
               REFERENCES users (user_id)
-            )`)
-    ;
-  console.log('create tables');
+            )`);
 })
 
 // db.close((err) => {
@@ -79,7 +78,6 @@ exports.CheckUser = (u_name, pass)=>{
     }
     return row;
   });
-  return false;
 };
 
 exports.getAllUsers = ()=> {
@@ -90,7 +88,6 @@ exports.getAllUsers = ()=> {
     }
     return rows;
   });
-  return false;
 };
 
 exports.CreateMessage = (sender_id,receiver_id,is_direct, message)=>{
@@ -104,23 +101,14 @@ exports.CreateMessage = (sender_id,receiver_id,is_direct, message)=>{
 };
 
 exports.GetMessages = (sender_id,receiver_id,is_direct)=>{
-  db.all(`SELECT sender_id, message, timestamp 
-          FROM message
-          WHERE sender_id = ?
-          AND  receiver_id = ?
-          AND  is_direct = ?
-          ORDER BY timestamp`, [sender_id,receiver_id,is_direct], (err, rows) => {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return rows;
-  });
-};
-
-exports.GetRooms = (joined_only,u_id)=>{
-  if(joined_only){
-    db.all(`SELECT room_id, room_name FROM rooms`, [], (err, rows) => {
+  if(is_direct){
+    is_direct = parseInt(is_direct, 10);
+    db.all(`SELECT sender_id, receiver_id, message, timestamp 
+          FROM messages
+          WHERE (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
+          OR (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
+          ORDER BY timestamp`, [sender_id,receiver_id,is_direct,
+                        receiver_id,sender_id,is_direct], (err, rows) => {
     if (err) {
       console.log(err.message);
       return false;
@@ -128,11 +116,12 @@ exports.GetRooms = (joined_only,u_id)=>{
     return rows;
     });
   }else{
-    db.all(`SELECT room_id
-            FROM join_rooms
-            WHERE user_id = ?,
-            INNER JOIN rooms ON join_rooms.room_id = rooms.room_id`, 
-            [u_id], (err, rows) => {
+    is_direct = parseInt(is_direct, 10);
+    db.all(`SELECT sender_id, receiver_id, message, timestamp 
+          FROM messages
+          WHERE receiver_id = ? 
+          AND  is_direct = ?
+          ORDER BY timestamp`, [receiver_id,is_direct], (err, rows) => {
     if (err) {
       console.log(err.message);
       return false;
@@ -140,18 +129,40 @@ exports.GetRooms = (joined_only,u_id)=>{
     return rows;
     });
   }
+  
 };
 
-exports.GetUserInRooms = (r_id)=>{
-  db.all(`SELECT user_id
-          FROM join_rooms
-          WHERE room_id = ?,
-          INNER JOIN users ON join_rooms.user_id = rooms.user_id`, 
-          [r_id], (err, rows) => {
+exports.GetGroups = ()=>{
+  db.all(`SELECT group_id, group_name, group_owner, group_color FROM groups`, [], (err, rows) => {
   if (err) {
     console.log(err.message);
     return false;
   }
   return rows;
+  });
+};
+
+exports.GetUserInGroup = (group_id)=>{
+  db.all(`SELECT user_id
+          FROM join_groups
+          WHERE group_id = ?,
+          INNER JOIN users ON join_rooms.user_id = rooms.user_id`, 
+          [group_id], (err, rows) => {
+  if (err) {
+    console.log(err.message);
+    return false;
+  }
+  return rows;
+  });
+};
+
+exports.JoinGroup = (user_id,group_id)=>{
+  db.all(`INSERT INTO join_groups(user_id, group_id) VALUES(?)`, 
+          [user_id,group_id], (err, rows) => {
+  if (err) {
+    console.log(err.message);
+    return false;
+  }
+  return true;
   });
 };

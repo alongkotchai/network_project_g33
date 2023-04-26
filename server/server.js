@@ -27,6 +27,7 @@ io.on("connection", (socket) => {
   console.log("connected", socket.id);
   socket.emit("welcome",{ status:200, message:`Welcome socket:${socket.id} to Server`});
 
+  //testing
   socket.on("greeting", (...args) => {
     console.log(args);
   });
@@ -39,6 +40,7 @@ io.on("connection", (socket) => {
       message: 'send broadcast successfuly'
     })
   });
+  // end testing
 
   socket.on('login', (username, password, response) =>{
     console.log('login:',username, password);
@@ -130,22 +132,22 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('getMessages', (token, is_direct, receiverId, response) =>{
+  socket.on('getMessages', (token, isDirect, receiverId, response) =>{
     console.log('getMessages');
     if(!checkAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    let messages = getMessageHistory(is_direct, )
-    if(sendMessage(io,socket.id, receiverId, is_direct)){
+    let messages = getMessageHistory(isDirect, )
+    if(messages){
       response({status:200, messages: messages});
     }else{
       response({status:400, message:'fail to send message'});
     }
   });
 
-  socket.on('sendMessage', (token, is_direct, receiverId, response) =>{
+  socket.on('sendMessage', (token, isDirect, receiverId, response) =>{
     console.log('sendMessage');
     if(!checkAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    if(sendMessage(io,socket.id, receiverId, is_direct)){
-      response({status:200, message: "Message sent"});
+    if(sendMessage(io,socket.id, receiverId, isDirect)){
+      response({status:200,});
     }else{
       response({status:400, message:'fail to send message'});
     }
