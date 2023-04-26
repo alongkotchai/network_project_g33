@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 
 // open the database
-let db = new sqlite3.Database('./app.db', (err) => {
+let db = new sqlite3.Database('./db/app.db', (err) => {
   if (err) {
     console.log(err, 'start database fail');
     return;
@@ -11,37 +11,37 @@ let db = new sqlite3.Database('./app.db', (err) => {
 
 db.serialize(() => {
   // Queries scheduled here will be serialized.
-  db.run(`CREATE TABLE [IF NOT EXISTS] users (
+  db.run(`CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
             username TEXT NOT NULL  UNIQUE,
             nickname TEXT NOT NULL  UNIQUE,
             password TEXT NOT NULL)`)
-    .run(`CREATE TABLE [IF NOT EXISTS] rooms (
+    .run(`CREATE TABLE IF NOT EXISTS rooms (
             room_id INTEGER PRIMARY KEY,
-            room_name TEXT NOT NULL  UNIQUE,
+            room_name TEXT NOT NULL UNIQUE,
             owner_id INTEGER NOT NULL,
             FOREIGN KEY (owner_id)
               REFERENCES users (user_id) 
             )`)
-    .run(`CREATE TABLE [IF NOT EXISTS] messages (
+    .run(`CREATE TABLE IF NOT EXISTS messages (
             message_id INTEGER PRIMARY KEY,
             sender_id INTEGER NOT NULL,
-            FOREIGN KEY (sender_id)
-              REFERENCES users (user_id)
             receiver_id INTEGER NOT NULL,
             is_direct INTEGER DEFAULT 0 NOT NULL,
             message TEXT NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (sender_id) REFERENCES users (user_id)
             )`)
-    .run(`CREATE TABLE [IF NOT EXISTS] join_rooms (
+    .run(`CREATE TABLE IF NOT EXISTS join_rooms (
             room_id INTEGER NOT NULL,
-            FOREIGN KEY (room_id)
-              REFERENCES rooms (room_id)
             user_id INTEGER NOT NULL,
             FOREIGN KEY (room_id)
-              REFERENCES rooms (room_id)
+              REFERENCES rooms (room_id),
+            FOREIGN KEY (user_id)
+              REFERENCES users (user_id)
             )`)
     ;
+  console.log('create tables');
 })
 
 // db.close((err) => {
@@ -72,7 +72,7 @@ exports.UpdateUserNickname = (u_id,new_name,)=>{
 };
 
 exports.CheckUser = (u_name, pass)=>{
-  db.each(`SELECT user_id FROM users WHERE user_name = ?, password = ?`, [u_name,pass], (err, row) => {
+  db.each(`SELECT user_id FROM users WHERE user_name = ? AND password = ?`, [u_name,pass], (err, row) => {
     if (err) {
       console.log(err.message);
       return false;
@@ -106,9 +106,9 @@ exports.CreateMessage = (sender_id,receiver_id,is_direct, message)=>{
 exports.GetMessages = (sender_id,receiver_id,is_direct)=>{
   db.all(`SELECT sender_id, message, timestamp 
           FROM message
-          WHERE sender_id = ?,
-                receiver_id = ?,
-                is_direct = ?
+          WHERE sender_id = ?
+          AND  receiver_id = ?
+          AND  is_direct = ?
           ORDER BY timestamp`, [sender_id,receiver_id,is_direct], (err, rows) => {
     if (err) {
       console.log(err.message);
