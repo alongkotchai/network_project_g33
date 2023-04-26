@@ -100,13 +100,13 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('createGroup', (token, groupName, response) =>{
+  socket.on('createGroup', (token, groupName, color, response) =>{
     console.log('createGroup');
     const userId = checkAuth(token,socket.id);
     if(!user){
       response({status:400, message:'not authorize'});
     }else{
-      let group = createGroup(io,socket,groupName,userId,'#ffffff');
+      let group = createGroup(io,socket,groupName,userId,color);
       if(group){
         response({status:200, group:group});
       }else{

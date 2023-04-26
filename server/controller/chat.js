@@ -1,4 +1,4 @@
-const {createMessage} = require('../db/db');
+// const {createMessage, GetMessages} = require('../db/db');
 const {getUserFromId} = require('./user');
 const {getGroupFromId} = require('./group');
 
@@ -12,6 +12,7 @@ exports.sendMessage = (io, senderId, receiverId, message, is_direct) =>{
             timestamp = timestamp.toISOString();
             let mes = {senderId:senderId,message:message,timestamp:timestamp};
             io.to(target.socketId).emit("receiveMessage",mes);
+            // createMessage(senderId,receiverId,parseInt(is_direct, 10),message);
             mes.receiverId = receiverId;
             messages.push(mes);
             return true;

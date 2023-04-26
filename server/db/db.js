@@ -1,9 +1,10 @@
 const sqlite3 = require('sqlite3').verbose();
 
 // open the database
-let db = new sqlite3.Database('./app.db', sqlite3.OPEN_CREATE, (err) => {
+let db = new sqlite3.Database('./app.db', (err) => {
   if (err) {
-    console.log(err.message);
+    console.log(err, 'start database fail');
+    return;
   }
   console.log('Connected to the app database.');
 });
@@ -78,7 +79,18 @@ exports.CheckUser = (u_name, pass)=>{
     }
     return row;
   });
-  throw "err";
+  return false;
+};
+
+exports.getAllUsers = ()=> {
+  db.all(`SELECT user_id, nickname FROM users`, [], (err, rows) =>{
+    if (err) {
+      console.log(err.message);
+      return false;
+    }
+    return rows;
+  });
+  return false;
 };
 
 exports.CreateMessage = (sender_id,receiver_id,is_direct, message)=>{
