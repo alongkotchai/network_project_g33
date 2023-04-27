@@ -76,7 +76,7 @@ exports.UpdateUserNickname = (u_id,new_name,)=>{
 
 exports.CheckUser = (u_name, pass)=>{
   db.each(`SELECT user_id FROM users 
-           WHERE user_name = ? 
+           WHERE username = ? 
            AND password = ?`, 
            [u_name,pass], (err, row) => {
     if (err) {
