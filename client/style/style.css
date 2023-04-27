@@ -10,7 +10,9 @@ body {
 }
 
 #lobby {
+    display: flex;
     flex-grow: 1;
+    flex-direction: column;
 }
 
 #message {
@@ -48,20 +50,5 @@ body {
 
 .chat-zone.me > div {
     background-color: silver;
-}
-
-.lobby-zone > span {
-    border-style: solid;
-    background-color: rgb(94, 188, 157);
-    border-color: rgb(182, 182, 182);
-    border-width: 2px;
-    max-width: 100px;
-    height: 30px;
-    border-radius: 5px;
-    padding: 5px;
-    display: grid;
-    grid-auto-flow: column;
-    grid-column-gap: 30px;
-    padding-left: 15px;
 }
 
