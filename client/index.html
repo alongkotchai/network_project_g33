@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style/style.css">
     <title>Client</title>
 </head>
 <body>
-    <div id="message" style="width: 100%; background-color: gray;min-height: 100px;"></div>
+    <div>
+        <div id="message" style="width: 100%; background-color: gray;min-height: 100px;"></div>
+    </div>
+    
     <hr>
     <label for="u-box">username:</label>
     <input type="text" id="u-box" name="u-box">
@@ -67,6 +71,28 @@
             document.getElementById("message").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
         }
 
+        var my_id = "test1"
+        var chat_zone = document.getElementById("message")
+        function renderChat(data) {
+            for (var idx in data) {
+                var message_zone = document.createElement("div")
+                var sender_box = document.createElement("span")
+                var message_box = document.createElement("div")
+                sender_box.textContent = data[idx].sender
+                message_box.textContent = data[idx].message
+                message_zone.appendChild(sender_box)
+                message_zone.appendChild(message_box)
+                chat_zone.appendChild(message_zone)
+            }
+        }
+
+        renderChat([{
+            message: "This is test message 1. This is test message 1.",
+            sender: "test1"
+        }, {
+            message: "This is test message 2. This is test message 2.",
+            sender: "test2"
+        }])
     </script>
 </body>
 </html>
