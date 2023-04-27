@@ -51,7 +51,9 @@ db.serialize(() => {
 // });
 
 exports.CreateUser = (u_name,n_name, pass)=>{
-  db.run(`INSERT INTO users(username,nickname,password) VALUES(?)`, [u_name,n_name,pass], function(err) {
+  db.run(`INSERT INTO users(username,nickname,password) 
+          VALUES(?,?,?)`, 
+          [u_name,n_name,pass], function(err) {
     if (err) {
       console.log(err.message);
       return false;
@@ -61,7 +63,9 @@ exports.CreateUser = (u_name,n_name, pass)=>{
 };
 
 exports.UpdateUserNickname = (u_id,new_name,)=>{
-  db.run(`UPDATE users SET nickname = ? WHERE user_id = ?`, [new_name,u_id], function(err) {
+  db.run(`UPDATE users SET nickname = ? 
+          WHERE user_id = ?`, 
+          [new_name,u_id], function(err) {
     if (err) {
       console.log(err.message);
       return false;
@@ -71,7 +75,10 @@ exports.UpdateUserNickname = (u_id,new_name,)=>{
 };
 
 exports.CheckUser = (u_name, pass)=>{
-  db.each(`SELECT user_id FROM users WHERE user_name = ? AND password = ?`, [u_name,pass], (err, row) => {
+  db.each(`SELECT user_id FROM users 
+           WHERE user_name = ? 
+           AND password = ?`, 
+           [u_name,pass], (err, row) => {
     if (err) {
       console.log(err.message);
       return false;
@@ -79,6 +86,16 @@ exports.CheckUser = (u_name, pass)=>{
     return row;
   });
 };
+
+exports.getUser = (user_id)=>{
+  db.each(`SELECT FROM users WHERE user_id = ?`, [user_id], (err, row) => {
+    if (err) {
+      console.log(err.message);
+      return false;
+    }
+    return row;
+  });
+}
 
 exports.getAllUsers = ()=> {
   db.all(`SELECT user_id, nickname FROM users`, [], (err, rows) =>{
@@ -91,7 +108,9 @@ exports.getAllUsers = ()=> {
 };
 
 exports.CreateMessage = (sender_id,receiver_id,is_direct, message)=>{
-  db.run(`INSERT INTO messages(sender_id, receiver_id, is_direct, message) VALUES(?)`, [sender_id,receiver_id,is_direct,message], function(err) {
+  db.run(`INSERT INTO messages(sender_id, receiver_id, is_direct, message) 
+          VALUES(?,?,?,?)`, 
+          [sender_id,receiver_id,is_direct,message], function(err) {
     if (err) {
       console.log(err.message);
       return false;
@@ -104,11 +123,12 @@ exports.GetMessages = (sender_id,receiver_id,is_direct)=>{
   if(is_direct){
     is_direct = parseInt(is_direct, 10);
     db.all(`SELECT sender_id, receiver_id, message, timestamp 
-          FROM messages
-          WHERE (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
-          OR (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
-          ORDER BY timestamp`, [sender_id,receiver_id,is_direct,
-                        receiver_id,sender_id,is_direct], (err, rows) => {
+            FROM messages
+            WHERE (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
+            OR (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
+            ORDER BY timestamp`, 
+            [sender_id,receiver_id,is_direct,
+              receiver_id,sender_id,is_direct], (err, rows) => {
     if (err) {
       console.log(err.message);
       return false;
@@ -118,10 +138,10 @@ exports.GetMessages = (sender_id,receiver_id,is_direct)=>{
   }else{
     is_direct = parseInt(is_direct, 10);
     db.all(`SELECT sender_id, receiver_id, message, timestamp 
-          FROM messages
-          WHERE receiver_id = ? 
-          AND  is_direct = ?
-          ORDER BY timestamp`, [receiver_id,is_direct], (err, rows) => {
+            FROM messages
+            WHERE receiver_id = ? 
+            AND  is_direct = ?
+            ORDER BY timestamp`, [receiver_id,is_direct], (err, rows) => {
     if (err) {
       console.log(err.message);
       return false;
@@ -133,7 +153,7 @@ exports.GetMessages = (sender_id,receiver_id,is_direct)=>{
 };
 
 exports.GetGroups = ()=>{
-  db.all(`SELECT group_id, group_name, group_owner, group_color FROM groups`, [], (err, rows) => {
+  db.all(`SELECT group_id,group_name,group_owner,group_color FROM groups`, [], (err, rows) => {
   if (err) {
     console.log(err.message);
     return false;
@@ -157,7 +177,7 @@ exports.GetUserInGroup = (group_id)=>{
 };
 
 exports.JoinGroup = (user_id,group_id)=>{
-  db.all(`INSERT INTO join_groups(user_id, group_id) VALUES(?)`, 
+  db.all(`INSERT INTO join_groups(user_id, group_id) VALUES(?,?)`, 
           [user_id,group_id], (err, rows) => {
   if (err) {
     console.log(err.message);

@@ -1,42 +1,61 @@
-const {CreateUser, CheckUser, getAllUsers, UpdateUserNickname} = require('../db/db');
+const {CreateUser, CheckUser,getUser, getAllUsers, UpdateUserNickname} = require('../db/db');
 
 let session = new Map();
-session.set(1,{username:"test1",nickname:"test1",socketId:"0"});
-let index = 10000;
+session.set(1,{userId:1, username:"test1",nickname:"test1",socketId:"0"});
+let index = 1000000;
 
 exports.getUserFromId = (userId)=>{
-    userId = parseInt(userId, 10);
-    if(session.has(userId)){
-        return session.get(userId);
+    const user = getUser(userId);
+    if(user){
+        return {userId:user.user_id,
+                username:user.username,
+                nickname:user.nickname};
+    }
+};
+
+exports.getSocktFromUserId = (userId)=>{
+    for (let user of session.values()) {
+        if(userId == user.userId){
+            return user.socketId;
+        }
     }
 };
 
 exports.authToken = (token, socketId) =>{
     token = parseInt(token, 10);
     if(session.has(token)){
-        let temp = session.get(token);
-        temp.socketId = socketId;
+        let user = session.get(token);
+        user.socketId = socketId;
         session.set(token,temp);
-        return {token:token, username:temp.username, nickname:temp.nickname};
+        return {userId:user.userId, 
+                username:user.username, 
+                nickname:user.nickname};
     }
 };
 
-exports.checkAuth = (token, socketId)=>{
+exports.getUserIdFromAuth = (token, socketId)=>{
     token = parseInt(token, 10);
     if(session.has(token)){
-        const temp = session.get(token);
-        if(temp.socketId == socketId){
-            return token; // user id
+        const user = session.get(token);
+        if(user.socketId == socketId){
+            return user.userId;
         }
     }
 }
 
 exports.authUser = (username, password, socketId) =>{
-    if(username && password){
+    const user = CheckUser(username,password);
+    if(user){
         index += 1;
-        session.set(index,{username:username,nickname:username,socketId:socketId});
-        const temp = session.get(index);
-        return {token:index.toString(), username:temp.username, userId:0, nickname:temp.nickname};
+        session.set(index,{userId:user.user_id,
+                           username:user.username,
+                           nickname:user.nickname,
+                           socketId:socketId});
+
+        return {token:index.toString(),
+                userId:user.user_id, 
+                username:user.username, 
+                nickname:user.nickname};
     }
 };
 
@@ -48,21 +67,32 @@ exports.getAllUsers = () =>{
     return users;
 };
 
-exports.registerUser = (username, password, nickname, socketId) =>{
-    if(username && password){
+exports.registerUser = (username, nickname, password, socketId) =>{
+    const id = CreateUser(username,nickname,password);
+    if(id){
         index += 1;
-        session.set(index,{username:username,nickname:nickname,socketId:socketId});
-        return {token:index.toString(),userId:0, username:username, nickname:nickname};
+        session.set(index,{userId:id,
+                           username:username,
+                           nickname:nickname,
+                           socketId:socketId});
+
+        return {token:index.toString(),
+                userId:id, 
+                username:username, 
+                nickname:nickname};
     }
 };
 
-exports.setNickname = (token, nickname) =>{
+exports.setNickname = (token,socketId, nickname) =>{
     token = parseInt(token, 10);
-    if(session.has(token)){
-        let temp = session.get(token);
-        temp.nickname = nickname;
-        session.set(token,temp);
-        return {nickname:temp.nickname};
+    const userId = this.getUserIdFromAuth(token,socketId);
+    if(!userId){return false;}
+    const result = UpdateUserNickname(userId,nickname);
+    if(result){
+        let user = session.get(token);
+        user.nickname = nickname;
+        session.set(token,user);
+        return {nickname:user.nickname};
     }
 };
 
