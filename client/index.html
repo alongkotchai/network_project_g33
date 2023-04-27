@@ -7,7 +7,11 @@
     <title>Client</title>
 </head>
 <body>
-    <div id="message" style="width: 100%; background-color: gray;min-height: 100px;"></div>
+    <div>
+        <div id="lobby"></div> 
+        <div id="message" style="width: 100%; background-color: gray;min-height: 100px;"></div>
+    </div>
+
     <hr>
     <label for="u-box">username:</label>
     <input type="text" id="u-box" name="u-box">
@@ -67,6 +71,26 @@
             document.getElementById("message").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
         }
 
+        var lobby_zone = document.getElementById("lobby")
+        function renderGroupChat(data){
+            for(var idx in data) {
+                var groupchat_box = document.createElement("div");
+                var chat_name = document.createElement("span");
+                chat_name.textContent = data[idx].name ;
+                groupchat_box.appendChild(chat_name);
+                lobby_zone.appendChild(groupchat_box);
+            }
+        }
+
+        renderGroupChat([{
+            name: "group1"
+        }, {
+            name: "group2"
+        }, {
+            name: "group3"
+        }, {
+            name: "group555"
+        }])
     </script>
 </body>
 </html>
