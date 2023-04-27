@@ -27,7 +27,8 @@ exports.authToken = (token, socketId) =>{
         let user = session.get(token);
         user.socketId = socketId;
         session.set(token,temp);
-        return {userId:user.userId, 
+        return {token:token,
+                userId:user.userId, 
                 username:user.username, 
                 nickname:user.nickname};
     }
@@ -60,11 +61,12 @@ exports.authUser = (username, password, socketId) =>{
 };
 
 exports.getAllUsers = () =>{
-    let users = Array();
-    for (let user of session.values()) {
-        users.push({nickname:user.nickname, socketId:socketId});
-      }
-    return users;
+    let usersList = Array();
+    const users = getAllUsers();
+    users.forEach(user => {
+        usersList.push({userId:user.user_id,nickname:user.nickname});
+    });
+    return usersList;
 };
 
 exports.registerUser = (username, nickname, password, socketId) =>{

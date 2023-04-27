@@ -2,9 +2,10 @@
 const {getUserFromId} = require('./user');
 const {getGroupFromId} = require('./group');
 
+//not use
 let messages = Array();
 
-exports.sendMessage = (io, senderId, receiverId, message, is_direct) =>{
+exports.sendMessage = (senderId, receiverId, message, is_direct) =>{
     if(is_direct){
         const target = getUserFromId(receiverId);
         if(target){

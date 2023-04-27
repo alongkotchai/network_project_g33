@@ -1,5 +1,5 @@
 const { Server } = require("socket.io");
-const {authToken, authUser, getAllUsers, registerUser, logoutUser, setNickname, checkAuth } = require('./controller/user');
+const {authToken, authUser, getAllUsers, registerUser, logoutUser, setNickname, getUserIdFromAuth } = require('./controller/user');
 const {sendMessage, getMessageHistory} = require('./controller/chat');
 const {getGroups, createGroup, joinGroup} = require('./controller/group');
 
@@ -15,7 +15,8 @@ io.use((socket, next) => {
   if(token){
     const session = authToken(token,socket.id);
     if(session){
-      console.log("session",session);
+      console.log("session success");
+      socket.emit('reAuth',session);
     }else{
       console.log("session fail");
     }
@@ -43,7 +44,7 @@ io.on("connection", (socket) => {
   // end testing
 
   socket.on('login', (username, password, response) =>{
-    console.log('login:',username, password);
+    console.log('login:',username);
     const result = authUser(username,password,socket.id);
     if(result){
       response({status:200, auth: result});
@@ -54,7 +55,7 @@ io.on("connection", (socket) => {
 
   socket.on('logout', (token, response) =>{
     console.log('logot');
-    if(!checkAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
+    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return;};
     if(logoutUser(token)){
       response({status:200});
     }else{
@@ -64,7 +65,7 @@ io.on("connection", (socket) => {
 
   socket.on('register', (username, password, nickname, response) =>{
     console.log('register');
-    const result = registerUser(username,password,nickname,socket.id);
+    const result = registerUser(username,nickname,password,socket.id);
     if(result){
       response({status:200, auth: result});
     }else{
@@ -74,7 +75,7 @@ io.on("connection", (socket) => {
 
   socket.on('setNickname', (token, nickname, response) =>{
     console.log('set nickname');
-    if(!checkAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
+    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
     const result = setNickname(token,nickname);
     if(result){
       response({status:200, result: result});
@@ -104,7 +105,7 @@ io.on("connection", (socket) => {
 
   socket.on('createGroup', (token, groupName, color, response) =>{
     console.log('createGroup');
-    const userId = checkAuth(token,socket.id);
+    const userId = getUserIdFromAuth(token,socket.id);
     if(!user){
       response({status:400, message:'not authorize'});
     }else{
@@ -119,7 +120,7 @@ io.on("connection", (socket) => {
 
   socket.on('joinGroup', (token, groupId, response) =>{
     console.log('joinGroup');
-    const userId = checkAuth(token,socket.id);
+    const userId = getUserIdFromAuth(token,socket.id);
     if(!userId){
       response({status:400, message:'not authorize'});
     }else{
@@ -134,7 +135,7 @@ io.on("connection", (socket) => {
 
   socket.on('getMessages', (token, isDirect, receiverId, response) =>{
     console.log('getMessages');
-    if(!checkAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
+    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
     let messages = getMessageHistory(isDirect, )
     if(messages){
       response({status:200, messages: messages});
@@ -145,7 +146,7 @@ io.on("connection", (socket) => {
 
   socket.on('sendMessage', (token, isDirect, receiverId, response) =>{
     console.log('sendMessage');
-    if(!checkAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
+    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
     if(sendMessage(io,socket.id, receiverId, isDirect)){
       response({status:200,});
     }else{
@@ -155,7 +156,7 @@ io.on("connection", (socket) => {
 
   socket.on('setBackground', (token, groupId, response) =>{
     console.log('sendMessage');
-    if(!checkAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
+    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
     response({
       status:200,
       message: "sendMessage"
