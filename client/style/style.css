@@ -1,3 +1,15 @@
-* {
-    background-color: beige;
+.chat-zone {
+    margin-bottom: 10px;
 }
+
+.chat-zone > span {
+    
+}
+
+.chat-zone > div {
+    background-color: cadetblue;
+    max-width: 200px;
+    border-radius: 5px;
+    padding: 5px;
+}
+
