@@ -69,14 +69,17 @@ exports.getAllUsers = () =>{
     return usersList;
 };
 
-exports.registerUser = (username, nickname, password, socketId) =>{
+exports.registerUser = (username, nickname, password, socket) =>{
     const id = CreateUser(username,nickname,password);
     if(id){
         index += 1;
         session.set(index,{userId:id,
                            username:username,
                            nickname:nickname,
-                           socketId:socketId});
+                           socketId:socket.id});
+
+        socket.broadcast.emit('newUser',{userId:id,
+                                         nickname:nickname});
 
         return {token:index.toString(),
                 userId:id, 
@@ -85,15 +88,18 @@ exports.registerUser = (username, nickname, password, socketId) =>{
     }
 };
 
-exports.setNickname = (token,socketId, nickname) =>{
+exports.setNickname = (token,socket, nickname) =>{
     token = parseInt(token, 10);
-    const userId = this.getUserIdFromAuth(token,socketId);
+    const userId = this.getUserIdFromAuth(token,socket.id);
     if(!userId){return false;}
     const result = UpdateUserNickname(userId,nickname);
     if(result){
         let user = session.get(token);
         user.nickname = nickname;
         session.set(token,user);
+        socket.broadcast.emit('userChangeNickname',
+                              {userId:id,
+                               nickname:nickname});
         return {nickname:user.nickname};
     }
 };

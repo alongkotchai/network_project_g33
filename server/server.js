@@ -63,9 +63,10 @@ io.on("connection", (socket) => {
     }
   });
 
+  //emit 'newUser' event
   socket.on('register', (username, password, nickname, response) =>{
     console.log('register');
-    const result = registerUser(username,nickname,password,socket.id);
+    const result = registerUser(username,nickname,password,socket);
     if(result){
       response({status:200, auth: result});
     }else{
@@ -73,10 +74,11 @@ io.on("connection", (socket) => {
     }
   });
 
+    //emit 'userChangeNickname' event
   socket.on('setNickname', (token, nickname, response) =>{
     console.log('set nickname');
     if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    const result = setNickname(token,nickname);
+    const result = setNickname(token,socket,nickname);
     if(result){
       response({status:200, result: result});
     }else{
@@ -103,6 +105,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  //emit 'newGroup' event
   socket.on('createGroup', (token, groupName, color, response) =>{
     console.log('createGroup');
     const userId = getUserIdFromAuth(token,socket.id);
@@ -144,6 +147,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // emit 'directMessage' or 'groupMessage' event
   socket.on('sendMessage', (token, isDirect, receiverId, response) =>{
     console.log('sendMessage');
     if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
@@ -154,6 +158,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  //emit 'groupChangeColor' event
   socket.on('setBackground', (token, groupId, response) =>{
     console.log('sendMessage');
     if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
