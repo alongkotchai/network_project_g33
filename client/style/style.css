@@ -9,6 +9,14 @@ body {
     flex-direction: column;
 }
 
+#lobby {
+    flex-grow: 1;
+}
+
+#message {
+    flex-grow: 3;
+}
+
 #display-message {
     background-color: azure;
 }
