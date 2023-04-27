@@ -11,6 +11,9 @@ body {
 
 #lobby {
     width: 300px;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
 }
 
 #message {

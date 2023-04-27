@@ -27,6 +27,9 @@
         <div id="message" class="w3-border">
             <div id="display-message" class="w3-padding"></div>
             <div id="input-message">
+                <label for="colorPicker">Choose a color: <code id="colorCode"></code> </label>
+                <input type="color" value="#e0ffee" id="colorPicker">
+                
                 <input type="text" id="ms-box" name="ms-box">
                 <button id="send-btn">send</button>
                 <hr>
@@ -82,11 +85,11 @@
         var lobby_zone = document.getElementById("lobby")
         function renderGroupChat(data){
             for(var idx in data) {
-                var groupchat_box = document.createElement("div");
+                var groupchat_box = document.createElement("button");
                 var chat_name = document.createElement("span");
                 chat_name.textContent = data[idx].name ;
                 groupchat_box.appendChild(chat_name);
-                groupchat_box.classList.add("lobby-zone");
+                groupchat_box.classList.add("w3-button", "w3-teal");
                 lobby_zone.appendChild(groupchat_box);
             }
         }
@@ -142,6 +145,20 @@
             message: "This is test message 2. This is test message 2.",
             sender: "test2"
         }])
+
+        //set chat color
+        const body = document.querySelector("body");
+        const input = document.getElementById("colorPicker");
+        const colorCode = document.getElementById("colorCode");
+
+        function setColor() {
+            document.getElementById("display-message").style.backgroundColor = input.value;
+            colorCode.innerHTML = input.value;
+        }
+
+        setColor();
+        input.addEventListener("input", setColor);
+        
     </script>
 </body>
 </html>
