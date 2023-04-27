@@ -10,44 +10,17 @@ body {
 }
 
 #lobby {
-    flex-grow: 1;
+    width: 300px;
 }
 
 #message {
-    flex-grow: 3;
-}
-
-#display-message {
-    background-color: azure;
+    flex-grow: 10;
 }
 
 #chat-panel {
     display: flex;
     flex-direction: row;
     flex-grow: 10;
-}
-
-#message {
-    overflow-y: scroll;
-}
-
-.chat-zone {
-    margin: 10px;
-}
-
-.chat-zone > span {
-    
-}
-
-.chat-zone > div {
-    background-color: cadetblue;
-    max-width: 200px;
-    border-radius: 5px;
-    padding: 10px;
-}
-
-.chat-zone.me > div {
-    background-color: silver;
 }
 
 .lobby-zone > span {
