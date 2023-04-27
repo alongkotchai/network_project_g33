@@ -1,7 +1,6 @@
 const {CreateUser, CheckUser,getUser, getAllUsers, UpdateUserNickname} = require('../db/db');
 
 let session = new Map();
-session.set(1,{userId:1, username:"test1",nickname:"test1",socketId:"0"});
 let index = 1000000;
 
 exports.getUserFromId = (userId)=>{
@@ -26,6 +25,7 @@ exports.authToken = (token, socketId) =>{
     if(session.has(token)){
         let user = session.get(token);
         user.socketId = socketId;
+        deleteSession(socketId);
         session.set(token,temp);
         return {token:token,
                 userId:user.userId, 
@@ -47,6 +47,7 @@ exports.getUserIdFromAuth = (token, socketId)=>{
 exports.authUser = (username, password, socketId) =>{
     const user = CheckUser(username,password);
     if(user){
+        deleteSession(socketId);
         index += 1;
         session.set(index,{userId:user.user_id,
                            username:user.username,
@@ -69,9 +70,11 @@ exports.getAllUsers = () =>{
     return usersList;
 };
 
+//emit 'newUser' event
 exports.registerUser = (username, nickname, password, socket) =>{
     const id = CreateUser(username,nickname,password);
     if(id){
+        deleteSession(socket.id);
         index += 1;
         session.set(index,{userId:id,
                            username:username,
@@ -88,6 +91,7 @@ exports.registerUser = (username, nickname, password, socket) =>{
     }
 };
 
+//emit 'userChangeNickname' event
 exports.setNickname = (token,socket, nickname) =>{
     token = parseInt(token, 10);
     const userId = this.getUserIdFromAuth(token,socket.id);
@@ -111,3 +115,15 @@ exports.logoutUser = (token) =>{
         return true;
     }
 };
+
+function deleteSession(socketId){
+    const s = Array();
+    for (let [token, user] of session) {
+        if(user.socketId == socketId){
+            s.push(token);
+        }
+    }
+    s.forEach((token)=>{
+        session.delete(token);
+    });
+}

@@ -74,7 +74,7 @@ io.on("connection", (socket) => {
     }
   });
 
-    //emit 'userChangeNickname' event
+  //emit 'userChangeNickname' event
   socket.on('setNickname', (token, nickname, response) =>{
     console.log('set nickname');
     if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
@@ -166,6 +166,10 @@ io.on("connection", (socket) => {
       status:200,
       message: "sendMessage"
     })
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log('disconnect',socket.id,reason);
   });
 });
 
