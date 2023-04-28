@@ -166,17 +166,20 @@
         }])
 
         //set chat color
-        const input = document.getElementById("colorPicker");
+        const colorPicker = document.getElementById("colorPicker");
         const colorCode = document.getElementById("colorCode");
 
-        function setColor() {
-            document.getElementById("display-message").style.backgroundColor = input.value;
-            document.getElementById("message").style.backgroundColor = input.value;
-            colorCode.innerHTML = input.value;
+        function getColor() {
+            colorCode.innerHTML = colorPicker.value;
         }
 
-        setColor();
-        input.addEventListener("input", setColor);
+        document.getElementById("color-btn").addEventListener('click',()=>{
+            document.getElementById("display-message").style.backgroundColor = colorPicker.value;
+            document.getElementById("message").style.backgroundColor = colorPicker.value;
+        });
+
+        getColor();
+        colorPicker.addEventListener("input", getColor);
         
     </script>
 </body>
