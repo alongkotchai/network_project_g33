@@ -31,7 +31,7 @@ body {
 #message-bottom {
     background-color: azure;
     display: grid;
-    grid-template-columns: 320px auto;
+    grid-template-columns: 330px auto;
     padding-left: 10px;
 }
 
