@@ -64,6 +64,7 @@ exports.authUser = (username, password, socketId) =>{
 exports.getAllUsers = () =>{
     let usersList = Array();
     const users = getAllUsers();
+    if(!users){return false;}
     users.forEach(user => {
         usersList.push({userId:user.user_id,nickname:user.nickname});
     });

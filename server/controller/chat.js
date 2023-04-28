@@ -1,42 +1,39 @@
-const {createMessage, GetMessages} = require('../db/db');
+const {CreateMessage, GetMessages, IsUserInGroup} = require('../db/db');
 const {getUserFromId,getSocktFromUserId} = require('./user');
-const {getUserInGroup} = require('./group');
-
 
 // emit
-exports.sendMessage = (io,socket,senderId, receiverId, message, is_direct) =>{
+exports.sendMessage = (io,senderId, receiverId, message, isDirect) =>{
     let timestamp = new Date();
     timestamp = timestamp.toISOString();
-    if(is_direct){
+    if(isDirect){
         const target = getUserFromId(receiverId);
-        const isOnline = getSocktFromUserId(receiverId);
+        const onSocketId = getSocktFromUserId(receiverId);
         if(target){
-            if(isOnline){
-                io.to(target.socketId).emit("directMessage",{senderId:senderId
-                                                            ,message:message,
-                                                            timestamp:timestamp});
+            if(onSocketId){
+                io.to(onSocketId).emit("directMessage",{senderId:senderId,
+                                                        message:message,
+                                                        timestamp:timestamp});
             }
-            createMessage(senderId,receiverId,parseInt(is_direct, 10),message);
+            CreateMessage(senderId,receiverId,isDirect,message);
             return true;
         }
     }else{
-        if(checkUserInGroup(receiverId)){
-            let mes = {senderId:senderId,groupId:receiverId,message:message,timestamp:timestamp};
-            io.in('g-' + receiverId.toString()).emit("groupMessage",mes);
-            mes.receiverId = receiverId;
+        if(IsUserInGroup(receiverId,senderId)){
+            io.in('g-' + receiverId.toString()).emit("groupMessage",{senderId:senderId,
+                                                                     groupId:receiverId,
+                                                                     message:message,
+                                                                     timestamp:timestamp});
+            CreateMessage(senderId,receiverId,isDirect,message);
             return true;
         }
     }
 };
 
-exports.getMessageHistory = (is_direct, receiverId, senderId) =>{
-    const message =GetMessages(is_direct,receiverId,senderId);
-    if(message!=False){
+exports.getMessageHistory = (isDirect, receiverId, senderId) =>{
+    const message = GetMessages(isDirect,receiverId,senderId);
+    if(message){
         console.log("Get Message ")
         return message
     }
-    else{
-        console.log("getMessageError")
-    }
-    
+    console.log("getMessageError");
 };

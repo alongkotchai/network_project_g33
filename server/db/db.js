@@ -16,21 +16,24 @@ db.serialize(() => {
             user_id INTEGER PRIMARY KEY,
             username TEXT NOT NULL  UNIQUE,
             nickname TEXT NOT NULL,
-            password TEXT NOT NULL)`).run(`CREATE TABLE IF NOT EXISTS groups (
+            password TEXT NOT NULL)`)
+    .run(`CREATE TABLE IF NOT EXISTS groups (
             group_id INTEGER PRIMARY KEY,
             group_name TEXT NOT NULL,
             group_owner INTEGER NOT NULL,
             group_color TEXT NOT NULL,
             FOREIGN KEY (group_owner)
               REFERENCES users (user_id) 
-            )`).run(`CREATE TABLE IF NOT EXISTS messages (
+            )`)
+    .run(`CREATE TABLE IF NOT EXISTS messages (
             sender_id INTEGER NOT NULL,
             receiver_id INTEGER NOT NULL,
             is_direct INTEGER DEFAULT 0 NOT NULL,
             message TEXT NOT NULL,
             timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (sender_id) REFERENCES users (user_id)
-            )`).run(`CREATE TABLE IF NOT EXISTS join_groups(
+            )`)
+    .run(`CREATE TABLE IF NOT EXISTS join_groups(
             group_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
             FOREIGN KEY (group_id)
@@ -94,6 +97,7 @@ exports.getAllUsers = () => {
 };
 
 exports.CreateMessage = (sender_id, receiver_id, is_direct, message) => {
+  is_direct = (is_direct)? 1:0;
   db.run(
     `INSERT INTO messages(sender_id, receiver_id, is_direct, message) 
           VALUES(?,?,?,?)`,
@@ -106,25 +110,25 @@ exports.CreateMessage = (sender_id, receiver_id, is_direct, message) => {
 
 exports.GetMessages = (sender_id, receiver_id, is_direct) => {
   if (is_direct) {
-    is_direct = parseInt(is_direct, 10);
+    is_direct = 1;
     db.all(
       `SELECT sender_id, receiver_id, message, timestamp 
-            FROM messages
-            WHERE (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
-            OR (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
-            ORDER BY timestamp`,
+       FROM messages
+       WHERE (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
+       OR (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
+       ORDER BY timestamp`,
       [sender_id, receiver_id, is_direct, receiver_id, sender_id, is_direct],
       (err, rows) => {
         return err?(console.log(err.message),false):rows;}
     );
   } else {
-    is_direct = parseInt(is_direct, 10);
+    is_direct = 0;
     db.all(
       `SELECT sender_id, receiver_id, message, timestamp 
-            FROM messages
-            WHERE receiver_id = ? 
-            AND  is_direct = ?
-            ORDER BY timestamp`,
+       FROM messages
+       WHERE receiver_id = ? 
+       AND  is_direct = ?
+       ORDER BY timestamp`,
       [receiver_id, is_direct],
       (err, rows) => {
         return err ? (console.log(err.message), false) : rows;
@@ -146,9 +150,9 @@ exports.GetGroups = () => {
 exports.GetUserInGroup = (group_id) => {
   db.all(
     `SELECT user_id
-          FROM join_groups
-          WHERE group_id = ?,
-          INNER JOIN users ON join_rooms.user_id = rooms.user_id`,
+     FROM join_groups
+     WHERE group_id = ?,
+     INNER JOIN users ON join_rooms.user_id = rooms.user_id`,
     [group_id],
     (err, rows) => {
       return err ? (console.log(err.message), false) : rows;
@@ -168,10 +172,10 @@ exports.JoinGroup = (user_id, group_id) => {
 
 exports.CreateGroup = (group_name, group_owner, group_color) => {
   db.run(
-    `INSERT INTO groupds (group_name,group_owner,group_color) VALUES(?,?,?,?)`,
+    `INSERT INTO groupds (group_name,group_owner,group_color) VALUES(?,?,?)`,
     [group_name, group_owner, group_color],
     (err) => {
-      return err ? (console.log(err.message), false) : true;
+      return err ? (console.log(err.message), false) : this.lastID;
     }
   );
 };
@@ -179,13 +183,23 @@ exports.CreateGroup = (group_name, group_owner, group_color) => {
 exports.IsUserInGroup =(group_id,user_id)=>{
   db.each(
     `SELECT *
-          FROM join_rooms
-          WHERE group_id = ? AND user_id = ?`,
+     FROM join_rooms
+     WHERE group_id = ? AND user_id = ?`,
     [group_id,user_id],
     (err,row) => {
       return (err|| !row) ? (console.log(err.message), false) : true;
     }
   );
 
+exports.UpdateGroupColor = (group_id, new_color) => {
+    db.run(
+      `UPDATE groups SET group_color  = ? 
+            WHERE group_id = ?`,
+      [new_color, group_id],
+      (err) =>{
+        return err?(console.log(err.message),false):true;
+      }
+    );
+  };
 
 };

@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const {authToken, authUser, getAllUsers, registerUser, logoutUser, setNickname, getUserIdFromAuth } = require('./controller/user');
 const {sendMessage, getMessageHistory} = require('./controller/chat');
-const {getGroups, createGroup, joinGroup} = require('./controller/group');
+const {getGroups, createGroup, joinGroup, changeGroupColor} = require('./controller/group');
 
 const io = new Server({ 
     //allow frontend cors 
@@ -143,7 +143,7 @@ io.on("connection", (socket) => {
     if(messages){
       response({status:200, messages: messages});
     }else{
-      response({status:400, message:'fail to send message'});
+      response({status:400, message:'fail to get messages'});
     }
   });
 
@@ -164,12 +164,19 @@ io.on("connection", (socket) => {
 
   //emit 'groupChangeColor' event
   socket.on('setBackground', (token, groupId, response) =>{
-    console.log('sendMessage');
+    console.log('setBackground');
     if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    response({
-      status:200,
-      message: "sendMessage"
-    })
+    if(changeGroupColor(io,userId,groupId)){
+      response({
+        status:200
+      });
+    }else{
+      response({
+        status:400,
+        message: "fail to change group color"
+      });
+    }
+    
   });
 
   socket.on("disconnect", (reason) => {
