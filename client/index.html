@@ -12,27 +12,31 @@
     <title>Client</title>
 </head>
 <body>
-    <div id="account" class="w3-padding w3-border">
+    <div id="account">
         <label for="u-box">username:</label>
         <input type="text" id="u-box" name="u-box">
         <label for="n-box">nickname:</label>
         <input type="text" id="n-box" name="n-box">
         <label for="p-box" >password:</label>
         <input type="password" id="p-box" name="p-box">
-        <button id="login-btn">Login</button>
-        <button id="regist-btn">Register</button>
+        <button id="login-btn" class="w3-small-button w3-teal w3-round-xxlarge">Login</button>
+        <button id="regist-btn" class="w3-small-button w3-teal w3-round-xxlarge">Register</button>
+        <button id="change-name-btn" class="w3-small-button w3-teal w3-round-xxlarge">Change nickname</button>
     </div>
     <div id="chat-panel" class="w3-border">
         <div id="lobby"></div>
-        <div id="message" class="w3-border">
-            <div id="display-message" class="w3-padding"></div>
-            <div id="input-message">
-                <label for="colorPicker">Choose a color: <code id="colorCode"></code> </label>
-                <input type="color" value="#e0ffee" id="colorPicker">
-                
-                <input type="text" id="ms-box" name="ms-box">
-                <button id="send-btn">send</button>
-                <hr>
+        <div id="message">
+            <div id="display-message"></div>
+            <div id="message-bottom">
+                <div id="color-picker">
+                    <label for="colorPicker">Choose a color: <code id="colorCode"></code> </label>
+                    <input type="color" value="#e0ffee" id="colorPicker">
+                    <button id="color-btn" class="w3-small-button w3-teal w3-round-xxlarge">change color</button>
+                </div>    
+                <div id="message-input">
+                    <input type="text" id="ms-box" name="ms-box">
+                    <button id="send-btn" class="w3-small-button w3-teal w3-round-xxlarge">send</button>
+                </div>
             </div>
         </div>
     </div>
@@ -82,19 +86,34 @@
             document.getElementById("message").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
         }
 
+        // lobby zone
         var lobby_zone = document.getElementById("lobby")
-        function renderGroupChat(data){
-            for(var idx in data) {
+        function renderLobby(groupData, userData){
+            for(var idx in groupData) {
                 var groupchat_box = document.createElement("button");
                 var chat_name = document.createElement("span");
-                chat_name.textContent = data[idx].name ;
+                chat_name.textContent = groupData[idx].name ;
                 groupchat_box.appendChild(chat_name);
                 groupchat_box.classList.add("w3-button", "w3-teal");
                 lobby_zone.appendChild(groupchat_box);
-            }
+            };
+
+            var create_group_button = document.createElement("button");
+            create_group_button.classList.add("w3-button", "w3-black");
+            create_group_button.textContent = "+";
+            lobby_zone.appendChild(create_group_button);
+
+            for(var idx in userData) {
+                var user_box = document.createElement("button");
+                var user_name = document.createElement("span");
+                user_name.textContent = userData[idx].username ;
+                user_box.appendChild(user_name);
+                user_box.classList.add("w3-button", "w3-grey");
+                lobby_zone.appendChild(user_box);
+            };
         }
 
-        renderGroupChat([{
+        renderLobby([{
             name: "group1"
         }, {
             name: "group2"
@@ -104,14 +123,15 @@
             name: "group4"
         }, {
             name: "group5"
+        }], [{
+            username: "user1"
         }, {
-            name: "group6"
+            username: "user2"
         }, {
-            name: "group7"
-        }, {
-            name: "group8"
-        }])
+            username: "user3"
+        }]);
 
+        // chat zone
         var my_id = "test1"
         var chat_zone = document.getElementById("display-message")
         function renderChat(data) {
@@ -147,17 +167,21 @@
         }])
 
         //set chat color
-        const body = document.querySelector("body");
-        const input = document.getElementById("colorPicker");
+        const colorPicker = document.getElementById("colorPicker");
         const colorCode = document.getElementById("colorCode");
 
-        function setColor() {
-            document.getElementById("display-message").style.backgroundColor = input.value;
-            colorCode.innerHTML = input.value;
+        function getColor() {
+            colorCode.innerHTML = colorPicker.value;
         }
 
-        setColor();
-        input.addEventListener("input", setColor);
+        document.getElementById("color-btn").addEventListener('click',()=>{
+            document.getElementById("display-message").style.backgroundColor = colorPicker.value;
+            document.getElementById("message").style.backgroundColor = colorPicker.value;
+            document.getElementById("message-bottom").style.backgroundColor = colorPicker.value;
+        });
+
+        getColor();
+        colorPicker.addEventListener("input", getColor);
         
     </script>
 </body>

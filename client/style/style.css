@@ -5,34 +5,89 @@
 body {
     height: 100vh;
     margin: 0;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: max-content auto;
 }
 
 #lobby {
     width: 300px;
     display: flex;
-    flex-grow: 1;
     flex-direction: column;
+    width: 200px;
+    overflow-y: scroll;
+    background-color: grey;
 }
 
 #message {
-    flex-grow: 10;
+    display: grid;
+    grid-template-rows: auto 50px;
+    width : auto;
+}
+
+#display-message {
+    background-color: azure;
+    overflow-y: scroll;
+}
+
+#message-bottom {
+    background-color: azure;
+    display: grid;
+    grid-template-columns: 330px auto;
+    padding-left: 10px;
+}
+
+#message-input {
+    display: grid;
+    grid-template-columns: auto 50px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-left: 10px;
+}
+
+#color-picker {
+    padding-top: 10px;
 }
 
 #chat-panel {
-    display: flex;
+    display: grid;
     flex-direction: row;
-    flex-grow: 10;
+    grid-template-columns: 200px auto;
 }
 
-.lobby-zone > span {
-    border-style: solid;
-    background-color: rgb(94, 188, 157);
-    border-color: rgb(182, 182, 182);
-    border-width: 2px;
-    max-width: 100px;
-    height: 30px;
+#account {
+    background-color: grey;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#u-box {
+    margin-right: 10px;
+}
+
+#n-box {
+    margin-right: 10px;
+}
+
+#p-box {
+    margin-right: 10px;
+}
+
+#ms-box {
+    min-width: min-content;
+}
+
+.chat-zone {
+    margin: 10px;
+}
+
+.chat-zone > span {
+    
+}
+
+.chat-zone > div {
+    background-color: cadetblue;
+    max-width: 200px;
     border-radius: 5px;
     padding: 5px;
     display: grid;
