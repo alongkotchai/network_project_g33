@@ -1,19 +1,44 @@
-const {GetGroups, GetUserInGroup, joinGroup, createGroup} = require('../db/db');
+<<<<<<< HEAD
 
+
+=======
+const {
+  GetGroups,
+  GetUserInGroup,
+  JoinGroup,
+  CreateGroup,
+} = require("../db/db");
+>>>>>>> 5929f44dee0aef5ce03dbf8021ae0a6c589dadf9
 
 //emit
-exports.createGroup = (socket, groupName, creatorId, bgColor) =>{
-   
+exports.createGroup = (io, groupName, groupOwnerId, bgColor) => {
+  const groupId = CreateGroup(groupName, groupOwnerId, bgColor);
+  if (!groupId) {
+    return false;
+  }
+
+  let obj = {
+    groupId: groupId, //groupId
+    creatorId: groupOwnerId, //userId
+    color: bgColor, //#ffffff format
+  };
+  io.emit("newGroup", obj);
+  return true;
 };
 
-exports.joinGroup = (userId, groupId) =>{
-    
+exports.joinGroup = (userId, groupId) => {
+  const isJoin = JoinGroup(userId, groupId);
+  return isJoin == True ? true : false;
 };
 
-exports.getGroups = () =>{
-    
+exports.getGroups = () => {
+  const groups = GetGroups();
+  return groups != false ? groups : false;
 };
 
-exports.getUserInGroup = (groupId) =>{
-    
-}
+exports.getUserInGroup = (groupId) => {
+  const users = GetUserInGroup(groupId);
+  return users != false ? users : (console.log("getUserInGroupError"), false);
+};
+
+exports.changeGroupColor = (userID,groupId,newColor)=>{};
