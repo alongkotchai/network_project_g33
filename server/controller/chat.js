@@ -1,28 +1,28 @@
 const {createMessage, GetMessages} = require('../db/db');
-const {getUserFromId} = require('./user');
-const {getGroupFromId} = require('./group');
+const {getUserFromId,getSocktFromUserId} = require('./user');
+const {getUserInGroup} = require('./group');
 
 
 // emit
-exports.sendMessage = (io,senderId, receiverId, message, is_direct) =>{
+exports.sendMessage = (io,socket,senderId, receiverId, message, is_direct) =>{
+    let timestamp = new Date();
+    timestamp = timestamp.toISOString();
     if(is_direct){
         const target = getUserFromId(receiverId);
+        const isOnline = getSocktFromUserId(receiverId);
         if(target){
-            let timestamp = new Date();
-            timestamp = timestamp.toISOString();
-            let mes = {senderId:senderId,message:message,timestamp:timestamp};
-            io.to(target.socketId).emit("directMessage",mes);
-            // createMessage(senderId,receiverId,parseInt(is_direct, 10),message);
-            mes.receiverId = receiverId;
+            if(isOnline){
+                io.to(target.socketId).emit("directMessage",{senderId:senderId
+                                                            ,message:message,
+                                                            timestamp:timestamp});
+            }
+            createMessage(senderId,receiverId,parseInt(is_direct, 10),message);
             return true;
         }
     }else{
-        const targetId = getGroupFromId(receiverId);
-        if(targetId){
-            let timestamp = new Date();
-            timestamp = timestamp.toISOString();
-            let mes = {senderId:senderId,groupId:targetId,message:message,timestamp:timestamp};
-            io.in('g-' + targetId).emit("groupMessage",mes);
+        if(checkUserInGroup(receiverId)){
+            let mes = {senderId:senderId,groupId:receiverId,message:message,timestamp:timestamp};
+            io.in('g-' + receiverId.toString()).emit("groupMessage",mes);
             mes.receiverId = receiverId;
             return true;
         }

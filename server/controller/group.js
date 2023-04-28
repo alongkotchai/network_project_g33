@@ -1,4 +1,4 @@
-const {GetGroups, GetUserInGroup} = require('../db/db');
+const {GetGroups, GetUserInGroup, joinGroup, createGroup} = require('../db/db');
 
 
 //emit

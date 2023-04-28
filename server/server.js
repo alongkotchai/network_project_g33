@@ -150,11 +150,15 @@ io.on("connection", (socket) => {
   // emit 'directMessage' or 'groupMessage' event
   socket.on('sendMessage', (token, isDirect, receiverId, response) =>{
     console.log('sendMessage');
-    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    if(sendMessage(io,socket.id, receiverId, isDirect)){
-      response({status:200,});
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
     }else{
-      response({status:400, message:'fail to send message'});
+      if(sendMessage(io, socket, userId, receiverId, isDirect)){
+        response({status:200,});
+      }else{
+        response({status:400, message:'fail to send message'});
+      }
     }
   });
 
