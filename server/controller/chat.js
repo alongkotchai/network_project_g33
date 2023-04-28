@@ -5,6 +5,9 @@ const {getGroupFromId} = require('./group');
 
 // emit
 exports.sendMessage = (io,senderId, receiverId, message, is_direct) =>{
+
+
+    
     if(is_direct){
         const target = getUserFromId(receiverId);
         if(target){
@@ -30,5 +33,13 @@ exports.sendMessage = (io,senderId, receiverId, message, is_direct) =>{
 };
 
 exports.getMessageHistory = (is_direct, receiverId, senderId) =>{
+    const message =GetMessages(is_direct,receiverId,senderId);
+    if(message!=False){
+        console.log("Get Message ")
+        return message
+    }
+    else{
+        console.log("getMessageError")
+    }
     
 };
