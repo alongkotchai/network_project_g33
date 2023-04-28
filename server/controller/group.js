@@ -1,14 +1,9 @@
-<<<<<<< HEAD
-
-
-=======
 const {
   GetGroups,
   GetUserInGroup,
   JoinGroup,
   CreateGroup,
 } = require("../db/db");
->>>>>>> 5929f44dee0aef5ce03dbf8021ae0a6c589dadf9
 
 //emit
 exports.createGroup = (io, groupName, groupOwnerId, bgColor) => {

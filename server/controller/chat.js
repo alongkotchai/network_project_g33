@@ -4,15 +4,9 @@ const {getUserInGroup} = require('./group');
 
 
 // emit
-<<<<<<< HEAD
 exports.sendMessage = (io,socket,senderId, receiverId, message, is_direct) =>{
     let timestamp = new Date();
     timestamp = timestamp.toISOString();
-=======
-
-
-    
->>>>>>> 5929f44dee0aef5ce03dbf8021ae0a6c589dadf9
     if(is_direct){
         const target = getUserFromId(receiverId);
         const isOnline = getSocktFromUserId(receiverId);
