@@ -25,7 +25,7 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io.connect("ws://localhost:5001",{auth: {token: "1"}});
+        const socket = io.connect("ws://localhost:5001");
 
         socket.emit("greeting",{ status:200, message:"Hello Server"});
 
@@ -42,9 +42,12 @@
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("u-box").value;
             const password = document.getElementById("p-box").value;
-            socket.emit('login',username,password,(response)=>{
-                print('server',response);
+            if(username&&password){
+                socket.emit('login',username,password,(response)=>{
+                print('login',response);
             });
+            }
+            
         });
 
         document.getElementById("regist-btn").addEventListener('click',()=>{
@@ -52,7 +55,7 @@
             const nickname = document.getElementById("n-box").value;
             const password = document.getElementById("p-box").value;
             socket.emit('register',username,password,nickname,(response)=>{
-                print('server',response);
+                print('register',response);
             });
         });
 

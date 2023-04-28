@@ -64,9 +64,9 @@ io.on("connection", (socket) => {
   });
 
   //emit 'newUser' event
-  socket.on('register', (username, password, nickname, response) =>{
+  socket.on('register', async(username, password, nickname, response) =>{
     console.log('register');
-    const result = registerUser(username,nickname,password,socket);
+    const result = await registerUser(username,nickname,password,socket);
     if(result){
       response({status:200, auth: result});
     }else{

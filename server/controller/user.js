@@ -72,8 +72,8 @@ exports.getAllUsers = () =>{
 };
 
 //emit 'newUser' event
-exports.registerUser = (username, nickname, password, socket) =>{
-    const id = CreateUser(username,nickname,password);
+exports.registerUser = async(username, nickname, password, socket) =>{
+    const id = await CreateUser(username,nickname,password);
     if(id){
         deleteSession(socket.id);
         index += 1;
