@@ -13,6 +13,8 @@ body {
     display: flex;
     flex-grow: 1;
     flex-direction: column;
+    overflow-y: scroll;
+    background-color: grey;
 }
 
 #message {
@@ -31,6 +33,25 @@ body {
 
 #message {
     overflow-y: scroll;
+}
+
+#account {
+    background-color: grey;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#u-box {
+    margin-right: 10px;
+}
+
+#n-box {
+    margin-right: 10px;
+}
+
+#p-box {
+    margin-right: 10px;
 }
 
 .chat-zone {
