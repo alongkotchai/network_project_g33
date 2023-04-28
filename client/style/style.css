@@ -6,7 +6,7 @@ body {
     height: 100vh;
     margin: 0;
     display: grid;
-    grid-template-rows: 50px auto;
+    grid-template-rows: max-content auto;
 }
 
 #lobby {
@@ -29,14 +29,15 @@ body {
 }
 
 #message-bottom {
+    background-color: azure;
     display: grid;
-    grid-template-columns: 350px auto;
-    margin-left: 10px;
+    grid-template-columns: 320px auto;
+    padding-left: 10px;
 }
 
 #message-input {
     display: grid;
-    grid-template-columns: 90% auto;
+    grid-template-columns: auto 50px;
     padding-top: 10px;
     padding-bottom: 10px;
     margin-left: 10px;
@@ -69,6 +70,10 @@ body {
 
 #p-box {
     margin-right: 10px;
+}
+
+#ms-box {
+    min-width: min-content;
 }
 
 .chat-zone {
