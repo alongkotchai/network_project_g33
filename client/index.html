@@ -34,7 +34,6 @@
                 
                 <input type="text" id="ms-box" name="ms-box">
                 <button id="send-btn">send</button>
-                <hr>
             </div>
         </div>
     </div>
@@ -84,6 +83,7 @@
             document.getElementById("message").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
         }
 
+        // lobby zone
         var lobby_zone = document.getElementById("lobby")
         function renderGroupChat(data){
             for(var idx in data) {
@@ -94,6 +94,10 @@
                 groupchat_box.classList.add("w3-button", "w3-teal");
                 lobby_zone.appendChild(groupchat_box);
             }
+            var create_group_button = document.createElement("button");
+            create_group_button.classList.add("w3-button", "w3-black");
+            create_group_button.textContent = "+";
+            lobby_zone.appendChild(create_group_button);
         }
 
         renderGroupChat([{
@@ -114,6 +118,7 @@
             name: "group8"
         }])
 
+        // chat zone
         var my_id = "test1"
         var chat_zone = document.getElementById("display-message")
         function renderChat(data) {
@@ -148,12 +153,12 @@
         }])
 
         //set chat color
-        const body = document.querySelector("body");
         const input = document.getElementById("colorPicker");
         const colorCode = document.getElementById("colorCode");
 
         function setColor() {
             document.getElementById("display-message").style.backgroundColor = input.value;
+            document.getElementById("message").style.backgroundColor = input.value;
             colorCode.innerHTML = input.value;
         }
 
