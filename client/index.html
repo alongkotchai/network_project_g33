@@ -7,8 +7,10 @@
     <title>Client</title>
 </head>
 <body>
-    <div id="message" style="width: 100%; background-color: black;min-height: 10px; color: white;"></div>
+    <div id="sc" style="width: 100%; background-color: black;min-height: 10px; color: white; font-family: Consolas;"></div>
+    <button id="clr-btn">Clear screen</button>
     <hr>
+    <h3>User</h3>
     <label for="u-box">username:</label>
     <input type="text" id="u-box" name="u-box">
     <label for="n-box">nickname:</label>
@@ -20,20 +22,41 @@
     <button id="nick-btn">Change nickname</button>
     <button id="logout-btn">Logout</button>
     <hr>
+    <h3>Auth</h3>
     <label for="t-box">token:</label>
     <input type="text" id="t-box" name="t-box">
     <hr>
+    <h3>Message</h3>
     <label for="r-box">Receiver:</label>
     <input type="number" id="r-box" name="r-box">
-    <label for="d-box">Direct?:</label>
+    <label for="d-box">Direct?: (0,1)</label>
     <input type="text" id="d-box" name="d-box">
     <label for="ms-box">Message:</label>
     <input type="text" id="ms-box" name="ms-box">
     <button id="send-btn">send</button>
     <hr>
+    <h3>Group</h3>
+    <label for="g-box">group name:</label>
+    <input type="text" id="g-box" name="g-box">
+    <label for="c-box">color:</label>
+    <input type="text" id="c-box" name="c-box">
+    <button id="g-btn">create group</button>
+    <br>
+    <label for="gi-box">group id:</label>
+    <input type="number" id="gi-box" name="gi-box">
+    <button id="gi-btn">join group</button>
+    <button id="gc-btn">change color</button>
+    <hr>
+    <h3>Get History</h3>
+    <label for="h-box">target id:</label>
+    <input type="number" id="h-box" name="h-box">
+    <label for="d2-box">Direct?: (0,1)</label>
+    <input type="text" id="d2-box" name="d2-box">
+    <button id="h-btn">get history messages</button>
+    <hr>
+    <h3>Get All</h3>
     <button id="users-btn">get users</button>
     <button id="groups-btn">get groups</button>
-    <hr>
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
@@ -41,7 +64,7 @@
 
         socket.on("welcome", (...args) => {
             let m = args[0];
-            document.getElementById("message").innerHTML += `<h3>Server: Status ${m.status} Message: ${m.message}</h3>`
+            document.getElementById("sc").innerHTML += `<h3>Server: Status ${m.status} Message: ${m.message}</h3>`
         });
 
         socket.on("directMessage", (...args) => {
@@ -72,15 +95,22 @@
             const m = args[0];
             print("groupChangeColor",m);
         });
+
+        document.getElementById("clr-btn").addEventListener('click',()=>{
+            document.getElementById("sc").innerHTML = "";
+        });
+
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("u-box").value;
             const password = document.getElementById("p-box").value;
             if(username&&password){
                 socket.emit('login',username,password,(response)=>{
+                if(response.status == 200){
+                    document.getElementById("t-box").value = response.auth.token
+                }
                 print('login',response);
             });
             }
-            
         });
 
         document.getElementById("regist-btn").addEventListener('click',()=>{
@@ -88,6 +118,9 @@
             const nickname = document.getElementById("n-box").value;
             const password = document.getElementById("p-box").value;
             socket.emit('register',username,password,nickname,(response)=>{
+                if(response.status == 200){
+                    document.getElementById("t-box").value = response.auth.token
+                }
                 print('register',response);
             });
         });
@@ -99,7 +132,8 @@
         });
 
         document.getElementById("groups-btn").addEventListener('click',()=>{
-            socket.emit('getGroups',(response)=>{
+            const token = document.getElementById("t-box").value;
+            socket.emit('getGroups',token,(response)=>{
                 print('getGroup',response);
             });
         });
@@ -126,12 +160,47 @@
             const di = document.getElementById("d-box").value == "1";
             const message = document.getElementById("ms-box").value;
             socket.emit("sendMessage",token,di,rec,message,(response)=>{
-                print('send message',response);
+                print('sendMessage',response);
+            });
+        });
+
+        document.getElementById("g-btn").addEventListener('click',()=>{
+            const token = document.getElementById("t-box").value;
+            const name = document.getElementById("g-box").value;
+            const color = document.getElementById("c-box").value;
+            socket.emit("createGroup",token,name,color,(response)=>{
+                print('createGroup',response);
+            });
+        });
+
+        document.getElementById("gc-btn").addEventListener('click',()=>{
+            const token = document.getElementById("t-box").value;
+            const id = document.getElementById("gi-box").value;
+            const color = document.getElementById("c-box").value;
+            socket.emit("setBackground",token,id,color,(response)=>{
+                print('setBackground',response);
+            });
+        });
+
+        document.getElementById("gi-btn").addEventListener('click',()=>{
+            const token = document.getElementById("t-box").value;
+            const id = document.getElementById("gi-box").value;
+            socket.emit("joinGroup",token,id,(response)=>{
+                print('joinGroup',response);
+            });
+        });
+
+        document.getElementById("h-btn").addEventListener('click',()=>{
+            const token = document.getElementById("t-box").value;
+            const id = document.getElementById("h-box").value;
+            const d2 = document.getElementById("d2-box").value == "1";
+            socket.emit("getMessages",token,d2,id,(response)=>{
+                print('getMessages',response);
             });
         });
 
         function print(string,obj){
-            document.getElementById("message").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
+            document.getElementById("sc").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
         }
 
     </script>

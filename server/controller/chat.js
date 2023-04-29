@@ -18,21 +18,26 @@ exports.sendMessage = async(io,senderId, receiverId, message, isDirect) =>{
         }
     }else{
         if(IsUserInGroup(receiverId,senderId)){
-            io.in('g-' + receiverId.toString()).emit("groupMessage",{senderId:senderId,
+            const timestamp = await CreateMessage(senderId,receiverId,isDirect,message);
+            io.in('g:' + receiverId.toString()).emit("groupMessage",{senderId:senderId,
                                                                      groupId:receiverId,
                                                                      message:message,
                                                                      timestamp:timestamp});
-            const timestamp = await CreateMessage(senderId,receiverId,isDirect,message);
             return timestamp;
         }
     }
 };
 
 exports.getMessageHistory = async(isDirect, receiverId, senderId) =>{
-    const message = await GetMessages(isDirect,receiverId,senderId);
-    if(message){
-        console.log("GetMessage ")
-        return message;
+    console.log("GetMessage")
+    let messageList = Array();
+    const messages = await GetMessages(isDirect,receiverId,senderId);
+    if(!messages){return false;}
+    for(const m of messages){
+        messageList.push({senderId:m.sender_id,
+                          receiverId:m.receiver_id,
+                          message:m.message,
+                          timestamp:m.timestamp});
     }
-    console.log("getMessageError");
+  return messageList;
 };

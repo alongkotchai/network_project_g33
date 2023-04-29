@@ -128,7 +128,7 @@ exports.CreateMessage = async(sender_id, receiver_id, is_direct, message) => {
   }catch(err){console.log(err);}
 };
 
-exports.GetMessages = async(sender_id, receiver_id, is_direct) => {
+exports.GetMessages = async(is_direct, receiver_id, sender_id) => {
   console.log('get messages');
   try{
     const db = await openDb();
@@ -197,7 +197,7 @@ exports.CreateGroup = async(group_name, group_owner, group_color) => {
   try{
     const db = await openDb();
     const result = await db.run(
-          `INSERT INTO groupds (group_name,group_owner,group_color) VALUES(?,?,?)`,
+          `INSERT INTO groups (group_name,group_owner,group_color) VALUES(?,?,?)`,
           [group_name, group_owner, group_color]
     );
     return result.lastID;
@@ -205,7 +205,7 @@ exports.CreateGroup = async(group_name, group_owner, group_color) => {
 };
 
 exports.IsUserInGroup = async(group_id,user_id) => {
-  console.log('get groups');
+  console.log('is in groups');
   try{
     const db = await openDb();
     const result = await db.all(
@@ -226,7 +226,7 @@ exports.UpdateGroupColor = async(group_id, new_color) => {
             WHERE group_id = ?`,
           [new_color, group_id]
     );
-    return result.lastID;
+    return result.changes;
   }catch(err){console.log(err);}
 };
 

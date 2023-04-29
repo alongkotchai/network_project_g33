@@ -85,13 +85,18 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('getGroups', async(response) =>{
+  socket.on('getGroups', async(token, response) =>{
     console.log('getGroups');
-    let groups = await getGroups();
-    if(groups){
-      response({status:200, groups: groups});
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
     }else{
-      response({status:400, message:'fail to get groups'});
+      let groups = await getGroups(userId);
+      if(groups){
+        response({status:200, groups: groups});
+      }else{
+        response({status:400, message:'fail to get groups'});
+      }
     }
   });
 
@@ -99,10 +104,10 @@ io.on("connection", (socket) => {
   socket.on('createGroup', async(token, groupName, color, response) =>{
     console.log('createGroup');
     const userId = getUserIdFromAuth(token,socket.id);
-    if(!user){
+    if(!userId){
       response({status:400, message:'not authorize'});
     }else{
-      let group = await createGroup(io,socket,groupName,userId,color);
+      let group = await createGroup(socket,groupName,userId,color);
       if(group){
         response({status:200, group:group});
       }else{
@@ -158,20 +163,23 @@ io.on("connection", (socket) => {
   });
 
   //emit 'groupChangeColor' event
-  socket.on('setBackground', async(token, groupId, response) =>{
+  socket.on('setBackground', async(token, groupId, color, response) =>{
     console.log('setBackground');
-    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    if(await changeGroupColor(io,userId,groupId)){
-      response({
-        status:200
-      });
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
     }else{
-      response({
-        status:400,
-        message: "fail to change group color"
-      });
+      if(await changeGroupColor(io,userId,groupId,color)){
+        response({
+          status:200
+        });
+      }else{
+        response({
+          status:400,
+          message: "fail to change group color"
+        });
+      }
     }
-    
   });
 
   socket.on("disconnect", (reason) => {

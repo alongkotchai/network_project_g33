@@ -134,12 +134,12 @@ async function setupSocketRoomsOnFirstConnect(socket,userId){
     const joinedGroups = await getJoinedGroups(userId);
     const rooms = socket.rooms;
     for (const room of rooms) {
-        if(room.slice(0, 2) == "g-"){
+        if(room.slice(0, 2) == "g:"){
             socket.leave(room)
         }
       }
     if(!joinedGroups){return;}
     joinedGroups.forEach((group)=>{
-        socket.join("g-"+group.group_id.toString());
+        socket.join("g:"+group.group_id.toString());
     });
 }
