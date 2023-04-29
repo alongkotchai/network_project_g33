@@ -80,23 +80,23 @@ exports.CheckUser = async(username, password) => {
           `SELECT user_id, username, nickname FROM users 
             WHERE username = ? 
             AND password = ?`,
-          [u_name, pass]
+          [username, password]
     );
-    return (result.user_id)? result : false;
+    return (result)? result: false;
   }catch(err){console.log(err);}
 };
 
-// exports.getUser = async(user_id) => {
-//   console.log('get users');
-//   try{
-//     const db = await openDb();
-//     const result = await db.all(
-//             `SELECT * FROM users WHERE user_id = ?`, 
-//             [user_id]
-//     );
-//     return (result.length)? result : false;
-//   }catch(err){console.log(err);}
-// };
+exports.getUser = async(user_id) => {
+  console.log('get a user');
+  try{
+    const db = await openDb();
+    const result = await db.get(
+            `SELECT * FROM users WHERE user_id = ?`, 
+            [user_id]
+    );
+    return (result)? result : false;
+  }catch(err){console.log(err);}
+};
 
 exports.getAllUsers = async() => {
   console.log('get users');
@@ -235,10 +235,10 @@ exports.getJoinedGroups = async(user_id) => {
   try{
     const db = await openDb();
     const result = await db.all(
-            `SELECT group_id
+            `SELECT join_groups.group_id
               FROM join_groups
-              WHERE user_id = ?,
-              INNER JOIN groups ON join_rooms.group_id = groups.group_id`,
+              INNER JOIN groups ON groups.group_id = join_groups.group_id
+              WHERE user_id = ?`,
             [user_id]
     );
     return result;

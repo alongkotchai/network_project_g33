@@ -33,16 +33,6 @@ io.on("connection", (socket) => {
     console.log(args);
   });
 
-  // socket.on('broadcast', (message, response) =>{
-  //   console.log('broadcast from:',socket.id, 'message:',message);
-  //   io.emit(`broadcast-all`,{ status:200, message:message, sender:socket.id});
-  //   response({
-  //     status:200,
-  //     message: 'send broadcast successfuly'
-  //   })
-  // });
-  // end testing
-
   socket.on('login', async(username, password, response) =>{
     console.log('login:',username);
     const result = await authUser(username,password,socket);

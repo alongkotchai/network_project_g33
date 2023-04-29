@@ -103,17 +103,17 @@ exports.setNickname = async(token,socket, nickname) =>{
         user.nickname = nickname;
         session.set(token,user);
         socket.broadcast.emit('userChangeNickname',
-                              {userId:id,
+                              {userId:userId,
                                nickname:nickname});
         return {nickname:user.nickname};
     }
 };
 
 exports.logoutUser = (token,socketId) =>{
-    deleteSession(socketId);
     token = parseInt(token, 10);
     if(session.has(token)){
         session.delete(token);
+        deleteSession(socketId);
         return true;
     }
 };
@@ -138,11 +138,8 @@ async function setupSocketRoomsOnFirstConnect(socket,userId){
             socket.leave(room)
         }
       }
+    if(!joinedGroups){return;}
     joinedGroups.forEach((group)=>{
         socket.join("g-"+group.group_id.toString());
     });
-}
-
-function clearSocketRooms(socket){
-    
 }

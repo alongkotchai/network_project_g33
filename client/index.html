@@ -7,7 +7,7 @@
     <title>Client</title>
 </head>
 <body>
-    <div id="message" style="width: 100%; background-color: gray;min-height: 100px;"></div>
+    <div id="message" style="width: 100%; background-color: black;min-height: 10px; color: white;"></div>
     <hr>
     <label for="u-box">username:</label>
     <input type="text" id="u-box" name="u-box">
@@ -17,28 +17,61 @@
     <input type="password" id="p-box" name="p-box">
     <button id="login-btn">Login</button>
     <button id="regist-btn">Register</button>
+    <button id="nick-btn">Change nickname</button>
+    <button id="logout-btn">Logout</button>
     <hr>
-    <label for="ms-box">Boardcast Message:</label>
+    <label for="t-box">token:</label>
+    <input type="text" id="t-box" name="t-box">
+    <hr>
+    <label for="r-box">Receiver:</label>
+    <input type="number" id="r-box" name="r-box">
+    <label for="d-box">Direct?:</label>
+    <input type="text" id="d-box" name="d-box">
+    <label for="ms-box">Message:</label>
     <input type="text" id="ms-box" name="ms-box">
     <button id="send-btn">send</button>
+    <hr>
+    <button id="users-btn">get users</button>
+    <button id="groups-btn">get groups</button>
     <hr>
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
         const socket = io.connect("ws://localhost:5001");
 
-        socket.emit("greeting",{ status:200, message:"Hello Server"});
-
         socket.on("welcome", (...args) => {
             let m = args[0];
             document.getElementById("message").innerHTML += `<h3>Server: Status ${m.status} Message: ${m.message}</h3>`
         });
 
-        socket.on("broadcast-all", (...args) => {
-            let m = args[0];
-            document.getElementById("message").innerHTML += `<h3>${m.sender} : ${m.message}</h3>`
+        socket.on("directMessage", (...args) => {
+            const m = args[0];
+            print("message",m);
         });
 
+        socket.on("groupMessage", (...args) => {
+            const m = args[0];
+            print("message",m);
+        });
+
+        socket.on("newUser", (...args) => {
+            const m = args[0];
+            print("newUser",m);
+        });
+
+        socket.on("userChangeNickname", (...args) => {
+            const m = args[0];
+            print("userChangeNickname",m);
+        });
+
+        socket.on("newGroup", (...args) => {
+            const m = args[0];
+            print("newGroup",m);
+        });
+        socket.on("groupChangeColor", (...args) => {
+            const m = args[0];
+            print("groupChangeColor",m);
+        });
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("u-box").value;
             const password = document.getElementById("p-box").value;
@@ -59,10 +92,41 @@
             });
         });
 
+        document.getElementById("users-btn").addEventListener('click',()=>{
+            socket.emit('getUsers',(response)=>{
+                print('getUsers',response);
+            });
+        });
+
+        document.getElementById("groups-btn").addEventListener('click',()=>{
+            socket.emit('getGroups',(response)=>{
+                print('getGroup',response);
+            });
+        });
+
+
+        document.getElementById("nick-btn").addEventListener('click',()=>{
+            const token = document.getElementById("t-box").value;
+            const nickname = document.getElementById("n-box").value;
+            socket.emit('setNickname',token,nickname,(response)=>{
+                print('setNickname',response);
+            });
+        });
+
+        document.getElementById("logout-btn").addEventListener('click',()=>{
+            const token = document.getElementById("t-box").value;
+            socket.emit('logout',token,(response)=>{
+                print('logout',response);
+            });
+        });
+
         document.getElementById("send-btn").addEventListener('click',()=>{
-            let message = document.getElementById("ms-box").value;
-            socket.emit("broadcast",message,(response)=>{
-                console.log(response.status);
+            const token = document.getElementById("t-box").value;
+            const rec = document.getElementById("r-box").value;
+            const di = document.getElementById("d-box").value == "1";
+            const message = document.getElementById("ms-box").value;
+            socket.emit("sendMessage",token,di,rec,message,(response)=>{
+                print('send message',response);
             });
         });
 
