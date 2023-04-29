@@ -1,8 +1,8 @@
 const {GetGroups,JoinGroup,CreateGroup,IsUserInGroup, UpdateGroupColor} = require("../db/db");
 
 //emit
-exports.createGroup = (socket, groupName, groupOwnerId, bgColor) => {
-  const groupId = CreateGroup(groupName, groupOwnerId, bgColor);
+exports.createGroup = async(socket, groupName, groupOwnerId, bgColor) => {
+  const groupId = await CreateGroup(groupName, groupOwnerId, bgColor);
   if (!groupId) {
     return false;
   }
@@ -16,24 +16,24 @@ exports.createGroup = (socket, groupName, groupOwnerId, bgColor) => {
   return group;
 };
 
-exports.joinGroup = (socket, userId, groupId) => {
-  if(IsUserInGroup(groupId,userId)){return false;}
-  const isJoin = JoinGroup(userId, groupId);
+exports.joinGroup = async(socket, userId, groupId) => {
+  if(await IsUserInGroup(groupId,userId)){return false;}
+  const isJoin = await JoinGroup(userId, groupId);
   if(!isJoin){return false;}
   socket.join("g-"+groupId.toString());
   return true;
 };
 
-exports.getGroups = (userId) => {
+exports.getGroups = async(userId) => {
   let groupList = Array();
-  const groups = GetGroups();
+  const groups = await GetGroups();
   if(!groups){return false;}
-  groups.forEach(g => {
+  groups.forEach(async(g) => {
     groupList.push({groupId:g.group_id,
                     groupName:g.group_name,
                     creatorId:g.group_owner,
                     color:group_color,
-                    isJoined:IsUserInGroup(g.group_id,userId)});
+                    isJoined: await IsUserInGroup(g.group_id,userId)});
   });
   return groupList;
 };
@@ -44,9 +44,9 @@ exports.getGroups = (userId) => {
 // };
 
 //emit
-exports.changeGroupColor = (io,userID,groupId,newColor)=>{
-    if(IsUserInGroup(groupId,userID)){
-        if(UpdateGroupColor(groupId,newColor)){
+exports.changeGroupColor = async(io,userID,groupId,newColor)=>{
+    if(await IsUserInGroup(groupId,userID)){
+        if(await UpdateGroupColor(groupId,newColor)){
             io.emit("groupChangeColor",{groupId:groupId,
                                         color:newColor});
             return true;

@@ -2,20 +2,19 @@ const {CreateMessage, GetMessages, IsUserInGroup} = require('../db/db');
 const {getUserFromId,getSocktFromUserId} = require('./user');
 
 // emit
-exports.sendMessage = (io,senderId, receiverId, message, isDirect) =>{
-    let timestamp = new Date();
-    timestamp = timestamp.toISOString();
+exports.sendMessage = async(io,senderId, receiverId, message, isDirect) =>{
+    console.log('sendMessage')
     if(isDirect){
         const target = getUserFromId(receiverId);
         const onSocketId = getSocktFromUserId(receiverId);
         if(target){
+            const timestamp = await CreateMessage(senderId,receiverId,isDirect,message);
             if(onSocketId){
                 io.to(onSocketId).emit("directMessage",{senderId:senderId,
                                                         message:message,
                                                         timestamp:timestamp});
             }
-            CreateMessage(senderId,receiverId,isDirect,message);
-            return true;
+            return timestamp;
         }
     }else{
         if(IsUserInGroup(receiverId,senderId)){
@@ -23,17 +22,17 @@ exports.sendMessage = (io,senderId, receiverId, message, isDirect) =>{
                                                                      groupId:receiverId,
                                                                      message:message,
                                                                      timestamp:timestamp});
-            CreateMessage(senderId,receiverId,isDirect,message);
-            return true;
+            const timestamp = await CreateMessage(senderId,receiverId,isDirect,message);
+            return timestamp;
         }
     }
 };
 
-exports.getMessageHistory = (isDirect, receiverId, senderId) =>{
-    const message = GetMessages(isDirect,receiverId,senderId);
+exports.getMessageHistory = async(isDirect, receiverId, senderId) =>{
+    const message = await GetMessages(isDirect,receiverId,senderId);
     if(message){
-        console.log("Get Message ")
-        return message
+        console.log("GetMessage ")
+        return message;
     }
     console.log("getMessageError");
 };

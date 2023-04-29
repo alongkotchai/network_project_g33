@@ -68,7 +68,7 @@ exports.UpdateUserNickname = async(u_id, new_name) => {
             WHERE user_id = ?`,
           [new_name, u_id]
     );
-    return result.lastID;
+    return result.changes;
   }catch(err){console.log(err);}
 };
 
@@ -77,12 +77,12 @@ exports.CheckUser = async(username, password) => {
   try{
     const db = await openDb();
     const result = await db.get(
-          `SELECT user_id FROM users 
+          `SELECT user_id, username, nickname FROM users 
             WHERE username = ? 
             AND password = ?`,
           [u_name, pass]
     );
-    return (result.user_id)? result.user_id : false;
+    return (result.user_id)? result : false;
   }catch(err){console.log(err);}
 };
 
@@ -106,7 +106,7 @@ exports.getAllUsers = async() => {
             `SELECT user_id, nickname FROM users`, 
             []
     );
-    return (result.length)? result : false;
+    return result;
   }catch(err){console.log(err);}
 };
 
@@ -120,12 +120,16 @@ exports.CreateMessage = async(sender_id, receiver_id, is_direct, message) => {
                 VALUES(?,?,?,?)`,
               [sender_id, receiver_id, is_direct, message]
     );
-    return result.lastID;
+    const tim = await db.get(
+              `SELECT timestamp FROM messages WHERE rowid = ?`, 
+              [result.lastID]
+    )
+    return tim.timestamp;
   }catch(err){console.log(err);}
 };
 
 exports.GetMessages = async(sender_id, receiver_id, is_direct) => {
-  console.log('get message');
+  console.log('get messages');
   try{
     const db = await openDb();
     if (is_direct) {
@@ -214,7 +218,7 @@ exports.IsUserInGroup = async(group_id,user_id) => {
 };
 
 exports.UpdateGroupColor = async(group_id, new_color) => {
-  console.log('update nickname');
+  console.log('update group color');
   try{
     const db = await openDb();
     const result = await db.run(
@@ -223,5 +227,20 @@ exports.UpdateGroupColor = async(group_id, new_color) => {
           [new_color, group_id]
     );
     return result.lastID;
+  }catch(err){console.log(err);}
+};
+
+exports.getJoinedGroups = async(user_id) => {
+  console.log('get joined groups');
+  try{
+    const db = await openDb();
+    const result = await db.all(
+            `SELECT group_id
+              FROM join_groups
+              WHERE user_id = ?,
+              INNER JOIN groups ON join_rooms.group_id = groups.group_id`,
+            [user_id]
+    );
+    return result;
   }catch(err){console.log(err);}
 };
