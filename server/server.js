@@ -152,13 +152,13 @@ io.on("connection", (socket) => {
   });
 
   // emit 'directMessage' or 'groupMessage' event
-  socket.on('sendMessage', async(token, isDirect, receiverId, response) =>{
+  socket.on('sendMessage', async(token, isDirect, receiverId, message, response) =>{
     console.log('sendMessage');
     const userId = getUserIdFromAuth(token,socket.id);
     if(!userId){
       response({status:400, message:'not authorize'});
     }else{
-      const timestamp = await sendMessage(io, socket, userId, receiverId, isDirect)
+      const timestamp = await sendMessage(io, userId, receiverId, message, isDirect)
       if(timestamp){
         response({status:200,timestamp:timestamp});
       }else{
