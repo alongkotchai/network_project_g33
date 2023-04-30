@@ -121,7 +121,7 @@
         <div id="lobby-container">
             <div id="lobby"></div>
         </div>
-        <div id="message">
+        <div id="message">  
             <div id="display-message" class="w3-padding"></div>
             <div id="message-bottom" class="w3-padding w3-border-top">
                 <div id="color-picker">
@@ -149,6 +149,8 @@
 
         var users;
         var groups;
+        var current_reciever_id;
+        var current_direct = false;
 
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("login-u").value;
@@ -296,11 +298,11 @@
         // });
 
         document.getElementById("send-btn").addEventListener('click',()=>{
-            const token = localStorage.getItem("token");
-            const rec = document.getElementById("r-box").value;
-            const di = true;
+            const token = localStorage.getItem("t-box");
+            const rec = current_reciever_id;
             const message = document.getElementById("ms-box").value;
-            socket.emit("sendMessage",token,di,rec,message,(response)=>{
+            console.log(token, current_direct, rec, message);
+            socket.emit("sendMessage",token,current_direct,rec,message,(response)=>{
                 console.log('sendMessage',response);
             });
         });
@@ -361,13 +363,20 @@
 
         // lobby zone
         var lobby_zone = document.getElementById("lobby")
+        var group_data;
         function renderLobby(groupData, userData){
-            for(var idx in groupData) {
+            for(let idx_lobby in groupData) {
                 var groupchat_box = document.createElement("button");
                 var chat_name = document.createElement("span");
-                chat_name.textContent = groupData[idx].groupName ;
+                chat_name.textContent = groupData[idx_lobby].groupName ;
                 groupchat_box.appendChild(chat_name);
                 groupchat_box.classList.add("w3-button", "w3-teal");
+                groupchat_box.addEventListener("click", function() {
+                    let id = groupData[idx_lobby].groupId;
+                    current_reciever_id = id;
+                    current_direct = false;
+                    console.log(current_reciever_id);
+                });
                 lobby_zone.appendChild(groupchat_box);
             };
 
@@ -378,12 +387,18 @@
             create_group_button.textContent = "+";
             lobby_zone.appendChild(create_group_button);
 
-            for(var idx in userData) {
-                var user_box = document.createElement("button");
-                var user_name = document.createElement("span");
-                user_name.textContent = userData[idx].nickname ;
+            for(let idx_user in userData) {
+                let user_box = document.createElement("button");
+                let user_name = document.createElement("span");
+                user_name.textContent = userData[idx_user].nickname ;
                 user_box.appendChild(user_name);
                 user_box.classList.add("w3-button", "w3-grey");
+                user_box.addEventListener("click", () => {
+                    let id = userData[idx_user].userId;
+                    current_reciever_id = id;
+                    current_direct = true;
+                    console.log(current_reciever_id, current_direct);
+                });
                 lobby_zone.appendChild(user_box);
             };
         }
@@ -392,6 +407,7 @@
         var my_id = "test1"
         var chat_zone = document.getElementById("display-message")
         function renderChat(data) {
+            console.log(data)
             for (var idx in data) {
                 var message_zone = document.createElement("div")
                 var sender_box = document.createElement("span")
@@ -410,38 +426,6 @@
             }
         }
 
-        renderChat([{
-            message: "This is test message 1. This is test message 1.",
-            sender: "test1"
-        }, {
-            message: "This is test message 2. This is test message 2.",
-            sender: "test2"
-        }, {
-            message: "This is test message 1. This is test message 1.",
-            sender: "test1"
-        }, {
-            message: "This is test message 2. This is test message 2.",
-            sender: "test2"
-        }, {
-            message: "This is test message 1. This is test message 1.",
-            sender: "test1"
-        }, {
-            message: "This is test message 2. This is test message 2.",
-            sender: "test2"
-        }, {
-            message: "This is test message 1. This is test message 1.",
-            sender: "test1"
-        }, {
-            message: "This is test message 2. This is test message 2.",
-            sender: "test2"
-        }, {
-            message: "This is test message 1. This is test message 1.",
-            sender: "test1"
-        }, {
-            message: "This is test message 2. This is test message 2.",
-            sender: "test2"
-        }])
-
         //set chat color
         const colorPicker = document.getElementById("colorPicker");
         const colorCode = document.getElementById("colorCode");
@@ -456,15 +440,26 @@
             document.getElementById("message-bottom").style.backgroundColor = colorPicker.value;
         });
 
-        getColor();
         colorPicker.addEventListener("input", getColor);
 
-        socket.emit('getUsers',(response)=>{
-            console.log('getUsers',response);
+        socket.on("directMessage", (...args) => {
+            const m = args[0];
+            let sender_nickname = "";
+            for (let idx_user in users) {
+                if (users[idx_user].userId == m.senderId) {
+                    sender_nickname = users[idx_user].nickname;
+                    break;
+                }
+            }
+            renderChat([{
+                message: m.message,
+                sender: sender_nickname
+            }]);
         });
 
-        socket.on("getMessages", (response) =>{
-            console.log(response)
+        socket.on("groupMessage", (...args) => {
+            const m = args[0];
+            console.log(args)
         });
 
     </script>
