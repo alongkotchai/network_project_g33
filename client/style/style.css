@@ -9,12 +9,23 @@ body {
     margin: 0;
 }
 
-#lobby {
+#lobby-container {
     display: flex;
     flex-direction: column;
     width: 300px;
-    overflow-y: scroll;
     background-color: grey;
+}
+
+#lobby {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 0;
+    overflow-y: scroll;
+}
+
+.w3-button {
+    overflow: unset !important;
 }
 
 #message {
