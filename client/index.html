@@ -504,6 +504,64 @@
             }]);
         });
 
+        socket.on("newUser", (...args) => {
+            const m = args[0];
+            console.log(m);
+            while(lobby.firstChild){
+                lobby.removeChild(lobby.firstChild);
+            }
+            socket.emit('getUsers',(response)=>{
+                const users_response = response;
+                const token = localStorage.getItem("t-box");
+                socket.emit('getGroups',token,(groups_response)=>{
+                    console.log(groups_response.groups);
+                    console.log(users_response.users);
+                    users = users_response.users;
+                    groups = groups_response.groups;
+                    renderLobby(groups_response.groups, users_response.users);
+                });         
+            });
+        });
+
+        socket.on("userChangeNickname", (...args) => {
+            const m = args[0];
+            console.log(m);
+            while(lobby.firstChild){
+                lobby.removeChild(lobby.firstChild);
+            }
+            socket.emit('getUsers',(response)=>{
+                const users_response = response;
+                const token = localStorage.getItem("t-box");
+                socket.emit('getGroups',token,(groups_response)=>{
+                    console.log(groups_response.groups);
+                    console.log(users_response.users);
+                    users = users_response.users;
+                    groups = groups_response.groups;
+                    renderLobby(groups_response.groups, users_response.users);
+                });         
+            });
+        });
+
+        socket.on("newGroup", (...args) => {
+            const m = args[0];
+            console.log(m);
+            var lobby = document.getElementById('lobby')
+            while(lobby.firstChild){
+                lobby.removeChild(lobby.firstChild);
+            }
+            socket.emit('getUsers',(response)=>{
+                const users_response = response;
+                const token = localStorage.getItem("t-box");
+                socket.emit('getGroups',token,(groups_response)=>{
+                    console.log(groups_response.groups);
+                    console.log(users_response.users);
+                    users = users_response.users;
+                    groups = groups_response.groups;
+                    renderLobby(groups_response.groups, users_response.users);
+                });         
+            });  
+        });
+
         socket.on("groupMessage", (...args) => {
             const m = args[0];
             console.log(args)
