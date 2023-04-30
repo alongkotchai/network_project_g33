@@ -193,9 +193,9 @@
                         const users_response = response;
                         const token = localStorage.getItem("t-box");
                         socket.emit('getGroups',token,(groups_response)=>{
-                            console.log(groups_response);
+                            console.log(groups_response.groups);
                             console.log(users_response.users);
-                            renderLobby([], users_response.users);
+                            renderLobby(groups_response.groups, users_response.users);
                         });         
                     });
 
@@ -274,13 +274,24 @@
             const name = document.getElementById("addgroup-n").value;
             const color = "#e0ffee";
             socket.emit("createGroup",token,name,color,(response)=>{
+                var lobby = document.getElementById('lobby')
+                while(lobby.firstChild){
+                    lobby.removeChild(lobby.firstChild);
+                }
+                socket.emit('getUsers',(response)=>{
+                    const users_response = response;
+                    const token = localStorage.getItem("t-box");
+                    socket.emit('getGroups',token,(groups_response)=>{
+                        console.log(groups_response.groups);
+                        console.log(users_response.users);
+                        renderLobby(groups_response.groups, users_response.users);
+                    });         
+                });  
                 console.log(response);
             });
 
             var addgroup_pop = document.getElementById("addgroup-pop")
             addgroup_pop.style.display = "none";
-
-            
         });
 
         // document.getElementById("gc-btn").addEventListener('click',()=>{
