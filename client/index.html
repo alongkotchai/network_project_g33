@@ -13,12 +13,6 @@
 </head>
 <body>
     <div id="account" class="w3-padding">
-        <label for="u-box">username:</label>
-        <input type="text" id="u-box" name="u-box">
-        <label for="n-box">nickname:</label>
-        <input type="text" id="n-box" name="n-box">
-        <label for="p-box" >password:</label>
-        <input type="password" id="p-box" name="p-box">
         <button id="login-btn" class="w3-small-button w3-teal w3-round-xxlarge">Login</button>
         <button id="regist-btn" class="w3-small-button w3-teal w3-round-xxlarge">Register</button>
         <button id="change-name-btn" class="w3-small-button w3-teal w3-round-xxlarge">Change nickname</button>
@@ -44,106 +38,106 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io.connect("ws://localhost:5001");
+        const socket = io.connect("ws://192.168.43.44:5001");
 
-        document.getElementById("login-btn").addEventListener('click',()=>{
-            const username = document.getElementById("u-box").value;
-            const password = document.getElementById("p-box").value;
-            if(username&&password){
-                socket.emit('login',username,password,(response)=>{
-                if(response.status == 200){
-                    document.getElementById("t-box").value = response.auth.token
-                }
-                print('login',response);
-            });
-            }
-        });
+        // document.getElementById("login-btn").addEventListener('click',()=>{
+        //     const username = document.getElementById("u-box").value;
+        //     const password = document.getElementById("p-box").value;
+        //     if(username&&password){
+        //         socket.emit('login',username,password,(response)=>{
+        //         if(response.status == 200){
+        //             document.getElementById("t-box").value = response.auth.token
+        //         }
+        //         print('login',response);
+        //     });
+        //     }
+        // });
 
-        document.getElementById("regist-btn").addEventListener('click',()=>{
-            const username = document.getElementById("u-box").value;
-            const nickname = document.getElementById("n-box").value;
-            const password = document.getElementById("p-box").value;
-            socket.emit('register',username,password,nickname,(response)=>{
-                if(response.status == 200){
-                    document.getElementById("t-box").value = response.auth.token
-                }
-                print('register',response);
-            });
-        });
+        // document.getElementById("regist-btn").addEventListener('click',()=>{
+        //     const username = document.getElementById("u-box").value;
+        //     const nickname = document.getElementById("n-box").value;
+        //     const password = document.getElementById("p-box").value;
+        //     socket.emit('register',username,password,nickname,(response)=>{
+        //         if(response.status == 200){
+        //             document.getElementById("t-box").value = response.auth.token
+        //         }
+        //         print('register',response);
+        //     });
+        // });
 
-        document.getElementById("users-btn").addEventListener('click',()=>{
-            socket.emit('getUsers',(response)=>{
-                print('getUsers',response);
-            });
-        });
+        // document.getElementById("users-btn").addEventListener('click',()=>{
+        //     socket.emit('getUsers',(response)=>{
+        //         print('getUsers',response);
+        //     });
+        // });
 
-        document.getElementById("groups-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            socket.emit('getGroups',token,(response)=>{
-                print('getGroup',response);
-            });
-        });
+        // document.getElementById("groups-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     socket.emit('getGroups',token,(response)=>{
+        //         print('getGroup',response);
+        //     });
+        // });
 
 
-        document.getElementById("nick-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const nickname = document.getElementById("n-box").value;
-            socket.emit('setNickname',token,nickname,(response)=>{
-                print('setNickname',response);
-            });
-        });
+        // document.getElementById("nick-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const nickname = document.getElementById("n-box").value;
+        //     socket.emit('setNickname',token,nickname,(response)=>{
+        //         print('setNickname',response);
+        //     });
+        // });
 
-        document.getElementById("logout-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            socket.emit('logout',token,(response)=>{
-                print('logout',response);
-            });
-        });
+        // document.getElementById("logout-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     socket.emit('logout',token,(response)=>{
+        //         print('logout',response);
+        //     });
+        // });
 
-        document.getElementById("send-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const rec = document.getElementById("r-box").value;
-            const di = document.getElementById("d-box").value == "1";
-            const message = document.getElementById("ms-box").value;
-            socket.emit("sendMessage",token,di,rec,message,(response)=>{
-                print('sendMessage',response);
-            });
-        });
+        // document.getElementById("send-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const rec = document.getElementById("r-box").value;
+        //     const di = document.getElementById("d-box").value == "1";
+        //     const message = document.getElementById("ms-box").value;
+        //     socket.emit("sendMessage",token,di,rec,message,(response)=>{
+        //         print('sendMessage',response);
+        //     });
+        // });
 
-        document.getElementById("g-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const name = document.getElementById("g-box").value;
-            const color = document.getElementById("c-box").value;
-            socket.emit("createGroup",token,name,color,(response)=>{
-                print('createGroup',response);
-            });
-        });
+        // document.getElementById("g-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const name = document.getElementById("g-box").value;
+        //     const color = document.getElementById("c-box").value;
+        //     socket.emit("createGroup",token,name,color,(response)=>{
+        //         print('createGroup',response);
+        //     });
+        // });
 
-        document.getElementById("gc-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const id = document.getElementById("gi-box").value;
-            const color = document.getElementById("c-box").value;
-            socket.emit("setBackground",token,id,color,(response)=>{
-                print('setBackground',response);
-            });
-        });
+        // document.getElementById("gc-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const id = document.getElementById("gi-box").value;
+        //     const color = document.getElementById("c-box").value;
+        //     socket.emit("setBackground",token,id,color,(response)=>{
+        //         print('setBackground',response);
+        //     });
+        // });
 
-        document.getElementById("gi-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const id = document.getElementById("gi-box").value;
-            socket.emit("joinGroup",token,id,(response)=>{
-                print('joinGroup',response);
-            });
-        });
+        // document.getElementById("gi-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const id = document.getElementById("gi-box").value;
+        //     socket.emit("joinGroup",token,id,(response)=>{
+        //         print('joinGroup',response);
+        //     });
+        // });
 
-        document.getElementById("h-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const id = document.getElementById("h-box").value;
-            const d2 = document.getElementById("d2-box").value == "1";
-            socket.emit("getMessages",token,d2,id,(response)=>{
-                print('getMessages',response);
-            });
-        });
+        // document.getElementById("h-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const id = document.getElementById("h-box").value;
+        //     const d2 = document.getElementById("d2-box").value == "1";
+        //     socket.emit("getMessages",token,d2,id,(response)=>{
+        //         print('getMessages',response);
+        //     });
+        // });
 
         function print(string,obj){
             document.getElementById("sc").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
@@ -229,6 +223,24 @@
         }, {
             message: "This is test message 2. This is test message 2.",
             sender: "test2"
+        }, {
+            message: "This is test message 1. This is test message 1.",
+            sender: "test1"
+        }, {
+            message: "This is test message 2. This is test message 2.",
+            sender: "test2"
+        }, {
+            message: "This is test message 1. This is test message 1.",
+            sender: "test1"
+        }, {
+            message: "This is test message 2. This is test message 2.",
+            sender: "test2"
+        }, {
+            message: "This is test message 1. This is test message 1.",
+            sender: "test1"
+        }, {
+            message: "This is test message 2. This is test message 2.",
+            sender: "test2"
         }])
 
         //set chat color
@@ -247,7 +259,10 @@
 
         getColor();
         colorPicker.addEventListener("input", getColor);
-        
+
+        socket.emit('getUsers',(response)=>{
+            console.log('getUsers',response);
+        });
     </script>
 </body>
 </html>

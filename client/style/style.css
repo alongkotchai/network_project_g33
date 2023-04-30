@@ -3,16 +3,16 @@
 }
 
 body {
+    display: flex;
+    flex-direction: column;
     height: 100vh;
     margin: 0;
-    display: grid;
-    grid-template-rows: max-content auto;
 }
 
 #lobby {
     display: flex;
     flex-direction: column;
-    width: 200px;
+    width: 300px;
     overflow-y: scroll;
     background-color: grey;
 }
@@ -20,35 +20,29 @@ body {
 #message {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
 }
 
 #display-message {
     background-color: azure;
     overflow-y: scroll;
-    flex-grow: 10;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
+    height: 0;
 }
 
 #message-bottom {
-    background-color: azure;
-    display: grid;
-    grid-template-columns: 330px auto;
-    padding-left: 10px;
-}
-
-#message-input {
-    display: grid;
-    grid-template-columns: auto 50px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    margin-left: 10px;
+    background-color: azure !important;
+    display: flex;
+    flex-direction: row;
+    gap: 0 30px;
 }
 
 #chat-panel {
-    display: grid;
     flex-direction: row;
-    grid-template-columns: 200px auto;
+    display: flex;
+    flex-grow: 1;
 }
 
 #account {
@@ -67,9 +61,11 @@ body {
     max-width: 500px;
     border-radius: 5px;
     padding: 5px;
-    display: grid;
-    grid-auto-flow: column;
-    grid-column-gap: 30px;
     padding-left: 15px;
 }
 
+#color-picker {
+    display: flex;
+    flex-direction: row;
+    gap: 0 10px;
+}
