@@ -60,7 +60,7 @@
         </div>
 
         <!-- link to change name popup-->
-        <button id="to-nick-btn" onclick="document.getElementById('nickname-pop').style.display='block'" class="w3-small-button w3-teal w3-round-xxlarge">Change nickname</button>
+        <button id="to-nick-btn" onclick="document.getElementById('nickname-pop').style.display='block'" class="w3-small-button w3-teal w3-round-xxlarge" style="display: none">Change nickname</button>
         <div id="nickname-pop" class="w3-modal">
             <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
         
@@ -73,8 +73,6 @@
                   <h2>Change Nickname</h2>
                   <label><b>New Nickname</b></label>
                   <input id="nickname-n" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Nickname" name="nckname" required>
-                  <label><b>Password</b></label>
-                  <input id="nickname-p" class="w3-input w3-border" type="password" placeholder="Enter Password" name="psw" required>
                   <button id="nick-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Change Nickname</button>
                 </div>
               </div>
@@ -82,7 +80,7 @@
         </div>
 
         <!-- link to logout popup-->
-        <button id="to-logout-btn" onclick="document.getElementById('logout-pop').style.display='block'" class="w3-small-button w3-teal w3-round-xxlarge">Logout</button>
+        <button id="to-logout-btn" onclick="document.getElementById('logout-pop').style.display='block'" class="w3-small-button w3-teal w3-round-xxlarge" style="display: none">Logout</button>
         <div id="logout-pop" class="w3-modal">
             <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
         
@@ -148,9 +146,9 @@
         var to_nick_btn = document.getElementById('to-nick-btn');
         var to_login_btn = document.getElementById("to-login-btn");
         var to_regist_btn = document.getElementById("to-regist-btn");
-            
-        to_logout_btn.style.display = "none";
-        to_nick_btn.style.display = "none";
+
+        var users;
+        var groups;
 
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("login-u").value;
@@ -171,6 +169,8 @@
                         socket.emit('getGroups',token,(groups_response)=>{
                             console.log(groups_response.groups);
                             console.log(users_response.users);
+                            users = users_response.users;
+                            groups = groups_response.groups;
                             renderLobby(groups_response.groups, users_response.users);
                         });         
                     });
@@ -181,6 +181,9 @@
 
             var login_pop = document.getElementById("login-pop");
             login_pop.style.display = "none";
+
+            document.getElementById("login-u").value = "";
+            document.getElementById("login-p").value = "";
         });
 
         document.getElementById("regist-btn").addEventListener('click',()=>{
@@ -197,6 +200,8 @@
                         socket.emit('getGroups',token,(groups_response)=>{
                             console.log(groups_response.groups);
                             console.log(users_response.users);
+                            users = users_response.users;
+                            groups = groups_response.groups;
                             renderLobby(groups_response.groups, users_response.users);
                         });         
                     });
@@ -208,6 +213,10 @@
                     to_regist_btn.style.display = "none";
                     to_nick_btn.style.display = "inline";
                     to_logout_btn.style.display = "inline";
+
+                    document.getElementById("regist-u").value = "";
+                    document.getElementById("regist-p").value = "";
+                    document.getElementById("regist-n").value = "";
                 }
                 console.log(response);
             });
@@ -231,11 +240,26 @@
             const token = localStorage.getItem("t-box");
             const nickname = document.getElementById("nickname-n").value;
             socket.emit('setNickname',token,nickname,(response)=>{
+                while(lobby.firstChild){
+                    lobby.removeChild(lobby.firstChild);
+                }
+                socket.emit('getUsers',(response)=>{
+                    const users_response = response;
+                    const token = localStorage.getItem("t-box");
+                    socket.emit('getGroups',token,(groups_response)=>{
+                        console.log(groups_response.groups);
+                        console.log(users_response.users);
+                        users = users_response.users;
+                        groups = groups_response.groups;
+                        renderLobby(groups_response.groups, users_response.users);
+                    });         
+                });
                 console.log(response);
             });
 
             var nickname_pop = document.getElementById('nickname-pop');
             nickname_pop.style.display = "none";
+            document.getElementById("nickname-n").value = "";
         });
 
         document.getElementById("logout-btn").addEventListener('click',()=>{
@@ -296,6 +320,8 @@
                     socket.emit('getGroups',token,(groups_response)=>{
                         console.log(groups_response.groups);
                         console.log(users_response.users);
+                        users = users_response.users;
+                        groups = groups_response.groups;
                         renderLobby(groups_response.groups, users_response.users);
                     });         
                 });  
@@ -304,6 +330,7 @@
 
             var addgroup_pop = document.getElementById("addgroup-pop")
             addgroup_pop.style.display = "none";
+            document.getElementById("addgroup-n").value = "";
         });
 
         // document.getElementById("gc-btn").addEventListener('click',()=>{
