@@ -72,9 +72,9 @@
                 <div class="w3-section">
                   <h2>Change Nickname</h2>
                   <label><b>New Nickname</b></label>
-                  <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Nickname" name="nckname" required>
+                  <input id="nickname-n" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Nickname" name="nckname" required>
                   <label><b>Password</b></label>
-                  <input class="w3-input w3-border" type="password" placeholder="Enter Password" name="psw" required>
+                  <input id="nickname-p" class="w3-input w3-border" type="password" placeholder="Enter Password" name="psw" required>
                   <button id="nick-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Change Nickname</button>
                 </div>
               </div>
@@ -150,8 +150,8 @@
 
             to_login_btn.style.display = "none";
             to_regist_btn.style.display = "none";
-            to_nick_btn.style.display = "block";
-            to_logout_btn.style.display = "blocK";
+            to_nick_btn.style.display = "inline";
+            to_logout_btn.style.display = "inline";
 
         });
 
@@ -163,8 +163,16 @@
                 if(response.status == 200){
                     localStorage.setItem("t-box", response.auth.token);
                 }
-                print('register',response);
+                console.log(response);
             });
+
+            var regist_pop = document.getElementById("regist-pop");
+            regist_pop.style.display = "none" ;
+
+            to_login_btn.style.display = "none";
+            to_regist_btn.style.display = "none";
+            to_nick_btn.style.display = "inline";
+            to_logout_btn.style.display = "inline";
         });
 
         // document.getElementById("users-btn").addEventListener('click',()=>{
@@ -182,11 +190,14 @@
 
 
         document.getElementById("nick-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const nickname = document.getElementById("n-box").value;
+            const token = localStorage.getItem("t-box");
+            const nickname = document.getElementById("nickname-n").value;
             socket.emit('setNickname',token,nickname,(response)=>{
-                print('setNickname',response);
+                console.log(response);
             });
+
+            var nickname_pop = document.getElementById('nickname-pop');
+            nickname_pop.style.display = "none";
         });
 
         document.getElementById("logout-btn").addEventListener('click',()=>{
@@ -198,8 +209,8 @@
             var logout_pop = document.getElementById("logout-pop");
             logout_pop.style.display = "none";
 
-            to_login_btn.style.display = "block";
-            to_regist_btn.style.display = "block";
+            to_login_btn.style.display = "inline";
+            to_regist_btn.style.display = "inline";
             to_nick_btn.style.display = "none";
             to_logout_btn.style.display = "none";
         });
