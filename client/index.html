@@ -131,8 +131,6 @@
         to_logout_btn.style.display = "none";
         to_nick_btn.style.display = "none";
 
-        
-
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("login-u").value;
             const password = document.getElementById("login-p").value;
@@ -140,6 +138,21 @@
                 socket.emit('login',username,password,(response)=>{
                 if(response.status == 200){
                     localStorage.setItem("t-box", response.auth.token);
+
+                    to_login_btn.style.display = "none";
+                    to_regist_btn.style.display = "none";
+                    to_nick_btn.style.display = "inline";
+                    to_logout_btn.style.display = "inline";
+
+                    socket.emit('getUsers',(response)=>{
+                        const users_response = response;
+                        const token = localStorage.getItem("t-box");
+                        socket.emit('getGroups',token,(groups_response)=>{
+                            console.log(groups_response);
+                            console.log(users_response.users);
+                            renderLobby([], users_response.users);
+                        });         
+                    });
                 }
                 console.log(response);
             });
@@ -147,12 +160,6 @@
 
             var login_pop = document.getElementById("login-pop");
             login_pop.style.display = "none";
-
-            to_login_btn.style.display = "none";
-            to_regist_btn.style.display = "none";
-            to_nick_btn.style.display = "inline";
-            to_logout_btn.style.display = "inline";
-
         });
 
         document.getElementById("regist-btn").addEventListener('click',()=>{
@@ -162,17 +169,27 @@
             socket.emit('register',username,password,nickname,(response)=>{
                 if(response.status == 200){
                     localStorage.setItem("t-box", response.auth.token);
+
+                    socket.emit('getUsers',(response)=>{
+                        const users_response = response;
+                        const token = localStorage.getItem("t-box");
+                        socket.emit('getGroups',token,(groups_response)=>{
+                            console.log(groups_response);
+                            console.log(users_response.users);
+                            renderLobby([], users_response.users);
+                        });         
+                    });
+
+                    var regist_pop = document.getElementById("regist-pop");
+                    regist_pop.style.display = "none" ;
+
+                    to_login_btn.style.display = "none";
+                    to_regist_btn.style.display = "none";
+                    to_nick_btn.style.display = "inline";
+                    to_logout_btn.style.display = "inline";
                 }
                 console.log(response);
             });
-
-            var regist_pop = document.getElementById("regist-pop");
-            regist_pop.style.display = "none" ;
-
-            to_login_btn.style.display = "none";
-            to_regist_btn.style.display = "none";
-            to_nick_btn.style.display = "inline";
-            to_logout_btn.style.display = "inline";
         });
 
         // document.getElementById("users-btn").addEventListener('click',()=>{
@@ -204,15 +221,23 @@
             const token = localStorage.getItem("t-box");
             socket.emit('logout',token,(response)=>{
                 console.log(response);
+                if(response.status == 200){
+                    var lobby = document.getElementById('lobby')
+                    while(lobby.firstChild){
+                        lobby.removeChild(lobby.firstChild);
+                    }
+
+                    var logout_pop = document.getElementById("logout-pop");
+                    logout_pop.style.display = "none";
+
+                    to_login_btn.style.display = "inline";
+                    to_regist_btn.style.display = "inline";
+                    to_nick_btn.style.display = "none";
+                    to_logout_btn.style.display = "none";
+                }
             });
 
-            var logout_pop = document.getElementById("logout-pop");
-            logout_pop.style.display = "none";
-
-            to_login_btn.style.display = "inline";
-            to_regist_btn.style.display = "inline";
-            to_nick_btn.style.display = "none";
-            to_logout_btn.style.display = "none";
+            
         });
 
         document.getElementById("send-btn").addEventListener('click',()=>{
@@ -290,16 +315,6 @@
                 lobby_zone.appendChild(user_box);
             };
         }
-
-        socket.emit('getUsers',(response)=>{
-            const users_response = response;
-            const token = localStorage.getItem("t-box");
-            socket.emit('getGroups',token,(groups_response)=>{
-                 console.log(groups_response);
-                 console.log(users_response.users);
-                 renderLobby([], users_response.users);
-            });         
-        });
 
         // chat zone
         var my_id = "test1"
