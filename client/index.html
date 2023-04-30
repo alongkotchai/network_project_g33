@@ -419,6 +419,7 @@
                     let id = groupData[idx_lobby].groupId;
                     current_reciever_id = id;
                     current_direct = false;
+                    chatName.innerHTML = groupData[idx_lobby].groupName;
                     console.log(current_reciever_id);
                 });
                 lobby_zone.appendChild(groupchat_box);
@@ -442,6 +443,7 @@
                     let id = userData[idx_user].userId;
                     current_reciever_id = id;
                     current_direct = true;
+                    chatName.innerHTML = userData[idx_user].nickname + "(Direct Message)";
                     console.log(current_reciever_id, current_direct);
                 });
                 lobby_zone.appendChild(user_box);
