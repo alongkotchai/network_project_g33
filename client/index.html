@@ -22,16 +22,16 @@
                 <span onclick="document.getElementById('login-pop').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
               </div>
         
-              <form class="w3-container">
+              <div class="w3-container">
                 <div class="w3-section">
                   <h2>Login</h2>
                   <label><b>Username</b></label>
-                  <input id="login-u" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" name="usrname" required>
+                  <input id="login-u" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" required>
                   <label><b>Password</b></label>
-                  <input id="login-p" class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" name="psw" required>
+                  <input id="login-p" class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" required>
                   <button id="login-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Login</button>
                 </div>
-              </form>
+              </div>
             </div>
         </div>
 
@@ -44,18 +44,18 @@
                 <span onclick="document.getElementById('regist-pop').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
               </div>
         
-              <form class="w3-container" action="/action_page.php">
+              <div class="w3-container">
                 <div class="w3-section">
                   <h2>Register</h2>
                   <label><b>Username</b></label>
-                  <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" name="usrname" required>
+                  <input id="regist-u" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" name="usrname" required>
                   <label><b>Password</b></label>
-                  <input class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" name="psw" required>
+                  <input id="regist-p" class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" name="psw" required>
                   <label><b>Nickname</b></label>
-                  <input class="w3-input w3-border" type="password" placeholder="Enter Nickname" name="nckname" required>
-                  <button id="regist-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Register</button>
+                  <input id="regist-n" class="w3-input w3-border" type="text" placeholder="Enter Nickname" name="nckname" required>
+                  <button id="regist-btn" class="w3-button w3-block w3-green w3-section w3-padding">Register</button>
                 </div>
-              </form>
+              </div>
             </div>
         </div>
 
@@ -68,7 +68,7 @@
                 <span onclick="document.getElementById('nickname-pop').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
               </div>
         
-              <form class="w3-container" action="/action_page.php">
+              <div class="w3-container" action="/action_page.php">
                 <div class="w3-section">
                   <h2>Change Nickname</h2>
                   <label><b>New Nickname</b></label>
@@ -77,7 +77,7 @@
                   <input class="w3-input w3-border" type="password" placeholder="Enter Password" name="psw" required>
                   <button id="nick-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Change Nickname</button>
                 </div>
-              </form>
+              </div>
             </div>
         </div>
 
@@ -103,29 +103,34 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io.connect("ws://192.168.43.44:5001",{auth: {token: ""}});
+        const socket = io.connect("ws://192.168.43.44:5001");
 
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("login-u").value;
             const password = document.getElementById("login-p").value;
-            console.log(username)
             if(username&&password){
                 socket.emit('login',username,password,(response)=>{
                 if(response.status == 200){
-                    document.getElementById("t-box").value = response.auth.token
+                    localStorage.setItem("t-box", response.auth.token);
                 }
-                print('login',response);
+                console.log(response);
             });
             }
+
+            var login_pop = document.getElementById("login-pop");
+            var to_login_btn = document.getElementById("to-login-btn");
+            login_pop.style.display = "none";
+            to_login_btn.disabled = true;
+
         });
 
         document.getElementById("regist-btn").addEventListener('click',()=>{
-            const username = document.getElementById("u-box").value;
-            const nickname = document.getElementById("n-box").value;
-            const password = document.getElementById("p-box").value;
+            const username = document.getElementById("regist-u").value;
+            const nickname = document.getElementById("regist-n").value;
+            const password = document.getElementById("regist-p").value;
             socket.emit('register',username,password,nickname,(response)=>{
                 if(response.status == 200){
-                    document.getElementById("t-box").value = response.auth.token
+                    localStorage.setItem("t-box", response.auth.token);
                 }
                 print('register',response);
             });
@@ -229,36 +234,22 @@
             for(var idx in userData) {
                 var user_box = document.createElement("button");
                 var user_name = document.createElement("span");
-                user_name.textContent = userData[idx].username ;
+                user_name.textContent = userData[idx].nickname ;
                 user_box.appendChild(user_name);
                 user_box.classList.add("w3-button", "w3-grey");
                 lobby_zone.appendChild(user_box);
             };
         }
 
-        var users;
         socket.emit('getUsers',(response)=>{
-            users = response;
-            const token = document.getElementById("t-box").value;
-            socket.emit('getGroups',token,(response)=>{
-                 console.log(response);
-                 console.log(users);
+            const users_response = response;
+            const token = localStorage.getItem("t-box");
+            socket.emit('getGroups',token,(groups_response)=>{
+                 console.log(groups_response);
+                 console.log(users_response.users);
+                 renderLobby([], users_response.users);
             });         
         });
-
-        console.log(users)
-
-        renderLobby([{
-            name: "group1"
-        }, {
-            name: "group2"
-        }, {
-            name: "group3"
-        }, {
-            name: "group4"
-        }, {
-            name: "group5"
-        }], users);
 
         // chat zone
         var my_id = "test1"
