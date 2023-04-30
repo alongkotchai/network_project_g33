@@ -21,7 +21,7 @@
         <input type="password" id="p-box" name="p-box">
         <button id="login-btn" class="w3-small-button w3-teal w3-round-xxlarge">Login</button>
         <button id="regist-btn" class="w3-small-button w3-teal w3-round-xxlarge">Register</button>
-        <button id="change-name-btn" class="w3-small-button w3-teal w3-round-xxlarge">Change nickname</button>
+        <button id="nick-btn" class="w3-small-button w3-teal w3-round-xxlarge">Change nickname</button>
     </div>
     <div id="chat-panel" class="w3-border">
         <div id="lobby"></div>
@@ -71,18 +71,18 @@
             });
         });
 
-        document.getElementById("users-btn").addEventListener('click',()=>{
-            socket.emit('getUsers',(response)=>{
-                print('getUsers',response);
-            });
-        });
+        // document.getElementById("users-btn").addEventListener('click',()=>{
+        //     socket.emit('getUsers',(response)=>{
+        //         print('getUsers',response);
+        //     });
+        // });
 
-        document.getElementById("groups-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            socket.emit('getGroups',token,(response)=>{
-                print('getGroup',response);
-            });
-        });
+        // document.getElementById("groups-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     socket.emit('getGroups',token,(response)=>{
+        //         print('getGroup',response);
+        //     });
+        // });
 
 
         document.getElementById("nick-btn").addEventListener('click',()=>{
@@ -93,12 +93,12 @@
             });
         });
 
-        document.getElementById("logout-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            socket.emit('logout',token,(response)=>{
-                print('logout',response);
-            });
-        });
+        // document.getElementById("logout-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     socket.emit('logout',token,(response)=>{
+        //         print('logout',response);
+        //     });
+        // });
 
         document.getElementById("send-btn").addEventListener('click',()=>{
             const token = document.getElementById("t-box").value;
@@ -110,40 +110,40 @@
             });
         });
 
-        document.getElementById("g-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const name = document.getElementById("g-box").value;
-            const color = document.getElementById("c-box").value;
-            socket.emit("createGroup",token,name,color,(response)=>{
-                print('createGroup',response);
-            });
-        });
+        // document.getElementById("g-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const name = document.getElementById("g-box").value;
+        //     const color = document.getElementById("c-box").value;
+        //     socket.emit("createGroup",token,name,color,(response)=>{
+        //         print('createGroup',response);
+        //     });
+        // });
 
-        document.getElementById("gc-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const id = document.getElementById("gi-box").value;
-            const color = document.getElementById("c-box").value;
-            socket.emit("setBackground",token,id,color,(response)=>{
-                print('setBackground',response);
-            });
-        });
+        // document.getElementById("gc-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const id = document.getElementById("gi-box").value;
+        //     const color = document.getElementById("c-box").value;
+        //     socket.emit("setBackground",token,id,color,(response)=>{
+        //         print('setBackground',response);
+        //     });
+        // });
 
-        document.getElementById("gi-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const id = document.getElementById("gi-box").value;
-            socket.emit("joinGroup",token,id,(response)=>{
-                print('joinGroup',response);
-            });
-        });
+        // document.getElementById("gi-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const id = document.getElementById("gi-box").value;
+        //     socket.emit("joinGroup",token,id,(response)=>{
+        //         print('joinGroup',response);
+        //     });
+        // });
 
-        document.getElementById("h-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const id = document.getElementById("h-box").value;
-            const d2 = document.getElementById("d2-box").value == "1";
-            socket.emit("getMessages",token,d2,id,(response)=>{
-                print('getMessages',response);
-            });
-        });
+        // document.getElementById("h-btn").addEventListener('click',()=>{
+        //     const token = document.getElementById("t-box").value;
+        //     const id = document.getElementById("h-box").value;
+        //     const d2 = document.getElementById("d2-box").value == "1";
+        //     socket.emit("getMessages",token,d2,id,(response)=>{
+        //         print('getMessages',response);
+        //     });
+        // });
 
         function print(string,obj){
             document.getElementById("sc").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
