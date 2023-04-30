@@ -155,6 +155,7 @@
         var chatName = document.getElementById("chat-name")
         var users;
         var groups;
+        var current_user_id;
         var current_reciever_id;
         var current_direct = false;
 
@@ -164,6 +165,7 @@
             if(username&&password){
                 socket.emit('login',username,password,(response)=>{
                 if(response.status == 200){
+                    current_user_id = response.auth.userId;
                     localStorage.setItem("t-box", response.auth.token);
 
                     to_login_btn.style.display = "none";
@@ -327,7 +329,17 @@
             const token = localStorage.getItem("t-box");
             const rec = current_reciever_id;
             const message = document.getElementById("ms-box").value;
-            console.log(token, current_direct, rec, message);
+            document.getElementById("ms-box").value = "";
+            for (let idx_user in users) {
+                if (users[idx_user].userId == current_user_id) {
+                    renderChat([{
+                        message: message,
+                        sender: users[idx_user].nickname
+                    }]);
+                    break;
+                }
+            }
+            
             socket.emit("sendMessage",token,current_direct,rec,message,(response)=>{
                 console.log('sendMessage',response);
             });
@@ -420,6 +432,7 @@
             lobby_zone.appendChild(create_group_button);
 
             for(let idx_user in userData) {
+                if (current_user_id == userData[idx_user].userId) continue;
                 let user_box = document.createElement("button");
                 let user_name = document.createElement("span");
                 user_name.textContent = userData[idx_user].nickname ;
