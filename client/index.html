@@ -315,16 +315,6 @@
             
         });
 
-        // document.getElementById("send-btn").addEventListener('click',()=>{
-        //     const token = document.getElementById("t-box").value;
-        //     const rec = document.getElementById("r-box").value;
-        //     const di = document.getElementById("d-box").value == "1";
-        //     const message = document.getElementById("ms-box").value;
-        //     socket.emit("sendMessage",token,di,rec,message,(response)=>{
-        //         print('sendMessage',response);
-        //     });
-        // });
-
         document.getElementById("send-btn").addEventListener('click',()=>{
             const token = localStorage.getItem("t-box");
             const rec = current_reciever_id;
@@ -453,8 +443,12 @@
         // chat zone
         var my_id = "test1"
         var chat_zone = document.getElementById("display-message")
-        function renderChat(data) {
-            console.log(data)
+        function renderChat(data, clear=false) {
+            if (clear) {
+                while(chat_zone.lastChild) {
+                    chat_zone.removeChild(chat_zone.lastChild)
+                }
+            }
             for (var idx in data) {
                 var message_zone = document.createElement("div")
                 var sender_box = document.createElement("span")
