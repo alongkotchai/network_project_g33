@@ -29,7 +29,7 @@
                   <input id="login-u" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" name="usrname" required>
                   <label><b>Password</b></label>
                   <input id="login-p" class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" name="psw" required>
-                  <button id="login-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Login</button>
+                  <button id="login-btn" class="w3-button w3-block w3-green w3-section w3-padding">Login</button>
                 </div>
               </form>
             </div>
@@ -68,14 +68,14 @@
                 <span onclick="document.getElementById('nickname-pop').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
               </div>
         
-              <form class="w3-container" action="/action_page.php">
+              <form class="w3-container">
                 <div class="w3-section">
                   <h2>Change Nickname</h2>
                   <label><b>New Nickname</b></label>
                   <input class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Nickname" name="nckname" required>
                   <label><b>Password</b></label>
                   <input class="w3-input w3-border" type="password" placeholder="Enter Password" name="psw" required>
-                  <button id="nick-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Change Nickname</button>
+                  <button id="nick-btn" class="w3-button w3-block w3-green w3-section w3-padding">Change Nickname</button>
                 </div>
               </form>
             </div>
@@ -112,7 +112,7 @@
             if(username&&password){
                 socket.emit('login',username,password,(response)=>{
                 if(response.status == 200){
-                    document.getElementById("t-box").value = response.auth.token
+                    console.log(response.auth.token)
                 }
                 print('login',response);
             });
@@ -160,15 +160,15 @@
         //     });
         // });
 
-        // document.getElementById("send-btn").addEventListener('click',()=>{
-        //     const token = document.getElementById("t-box").value;
-        //     const rec = document.getElementById("r-box").value;
-        //     const di = document.getElementById("d-box").value == "1";
-        //     const message = document.getElementById("ms-box").value;
-        //     socket.emit("sendMessage",token,di,rec,message,(response)=>{
-        //         print('sendMessage',response);
-        //     });
-        // });
+        document.getElementById("send-btn").addEventListener('click',()=>{
+            const token = localStorage.getItem("token");
+            const rec = document.getElementById("r-box").value;
+            const di = true;
+            const message = document.getElementById("ms-box").value;
+            socket.emit("sendMessage",token,di,rec,message,(response)=>{
+                console.log('sendMessage',response);
+            });
+        });
 
         // document.getElementById("g-btn").addEventListener('click',()=>{
         //     const token = document.getElementById("t-box").value;
@@ -204,10 +204,6 @@
         //         print('getMessages',response);
         //     });
         // });
-
-        function print(string,obj){
-            document.getElementById("sc").innerHTML += `<h3>${string}:${JSON.stringify(obj)}</h3>`;
-        }
 
         // lobby zone
         var lobby_zone = document.getElementById("lobby")
@@ -277,7 +273,6 @@
                 if (data[idx].sender == my_id) {
                     message_box.classList.add("w3-light-grey")
                     message_zone.classList.add("w3-right")
-                    //sender_box.classList.add("w3-right")
                 }
                 chat_zone.appendChild(message_zone)
             }
@@ -335,6 +330,11 @@
         socket.emit('getUsers',(response)=>{
             console.log('getUsers',response);
         });
+
+        socket.on("getMessages", (response) =>{
+            console.log(response)
+        });
+
     </script>
 </body>
 </html>
