@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const {authToken, authUser, getAllUsers, registerUser, logoutUser, setNickname, getUserIdFromAuth } = require('./controller/user');
 const {sendMessage, getMessageHistory} = require('./controller/chat');
-const {getGroups, createGroup, joinGroup} = require('./controller/group');
+const {getGroups, createGroup, joinGroup, changeGroupColor} = require('./controller/group');
 
 const io = new Server({ 
     //allow frontend cors 
@@ -10,10 +10,10 @@ const io = new Server({
     } 
 });
 
-io.use((socket, next) => {
+io.use(async(socket, next) => {
   const token = socket.handshake.auth.token;
   if(token){
-    const session = authToken(token,socket.id);
+    const session = await authToken(token,socket);
     if(session){
       console.log("session success");
       socket.emit('reAuth',session);
@@ -33,19 +33,9 @@ io.on("connection", (socket) => {
     console.log(args);
   });
 
-  socket.on('broadcast', (message, response) =>{
-    console.log('broadcast from:',socket.id, 'message:',message);
-    io.emit(`broadcast-all`,{ status:200, message:message, sender:socket.id});
-    response({
-      status:200,
-      message: 'send broadcast successfuly'
-    })
-  });
-  // end testing
-
-  socket.on('login', (username, password, response) =>{
+  socket.on('login', async(username, password, response) =>{
     console.log('login:',username);
-    const result = authUser(username,password,socket.id);
+    const result = await authUser(username,password,socket);
     if(result){
       response({status:200, auth: result});
     }else{
@@ -56,7 +46,7 @@ io.on("connection", (socket) => {
   socket.on('logout', (token, response) =>{
     console.log('logot');
     if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return;};
-    if(logoutUser(token)){
+    if(logoutUser(token,socket.id)){
       response({status:200});
     }else{
       response({status:400, message:'fail to logout'});
@@ -64,9 +54,9 @@ io.on("connection", (socket) => {
   });
 
   //emit 'newUser' event
-  socket.on('register', (username, password, nickname, response) =>{
+  socket.on('register', async(username, password, nickname, response) =>{
     console.log('register');
-    const result = registerUser(username,nickname,password,socket);
+    const result = await registerUser(username,nickname,password,socket);
     if(result){
       response({status:200, auth: result});
     }else{
@@ -75,10 +65,10 @@ io.on("connection", (socket) => {
   });
 
   //emit 'userChangeNickname' event
-  socket.on('setNickname', (token, nickname, response) =>{
+  socket.on('setNickname', async(token, nickname, response) =>{
     console.log('set nickname');
     if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    const result = setNickname(token,socket,nickname);
+    const result = await setNickname(token,socket,nickname);
     if(result){
       response({status:200, result: result});
     }else{
@@ -86,8 +76,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('getUsers', (response) =>{
-    const result = getAllUsers();
+  socket.on('getUsers', async(response) =>{
+    const result = await getAllUsers();
     if(result){
       response({status:200, users: result});
     }else{
@@ -95,24 +85,29 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('getGroups', (response) =>{
+  socket.on('getGroups', async(token, response) =>{
     console.log('getGroups');
-    let groups = getGroups();
-    if(groups){
-      response({status:200, groups: groups});
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
     }else{
-      response({status:400, message:'fail to get groups'});
+      let groups = await getGroups(userId);
+      if(groups){
+        response({status:200, groups: groups});
+      }else{
+        response({status:400, message:'fail to get groups'});
+      }
     }
   });
 
   //emit 'newGroup' event
-  socket.on('createGroup', (token, groupName, color, response) =>{
+  socket.on('createGroup', async(token, groupName, color, response) =>{
     console.log('createGroup');
     const userId = getUserIdFromAuth(token,socket.id);
-    if(!user){
+    if(!userId){
       response({status:400, message:'not authorize'});
     }else{
-      let group = createGroup(io,socket,groupName,userId,color);
+      let group = await createGroup(socket,groupName,userId,color);
       if(group){
         response({status:200, group:group});
       }else{
@@ -121,13 +116,13 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('joinGroup', (token, groupId, response) =>{
+  socket.on('joinGroup', async(token, groupId, response) =>{
     console.log('joinGroup');
     const userId = getUserIdFromAuth(token,socket.id);
     if(!userId){
       response({status:400, message:'not authorize'});
     }else{
-      let result = joinGroup(socket,userId,groupId);
+      let result = await joinGroup(socket,userId,groupId);
       if(result){
         response({status:200});
       }else{
@@ -136,36 +131,55 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on('getMessages', (token, isDirect, receiverId, response) =>{
+  socket.on('getMessages', async(token, isDirect, receiverId, response) =>{
     console.log('getMessages');
-    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    let messages = getMessageHistory(isDirect, )
-    if(messages){
-      response({status:200, messages: messages});
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
     }else{
-      response({status:400, message:'fail to send message'});
+      let messages = await getMessageHistory(isDirect,receiverId, userId );
+      if(messages){
+        response({status:200, messages: messages});
+      }else{
+        response({status:400, message:'fail to get messages'});
+      }
     }
   });
 
   // emit 'directMessage' or 'groupMessage' event
-  socket.on('sendMessage', (token, isDirect, receiverId, response) =>{
+  socket.on('sendMessage', async(token, isDirect, receiverId, message, response) =>{
     console.log('sendMessage');
-    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    if(sendMessage(io,socket.id, receiverId, isDirect)){
-      response({status:200,});
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
     }else{
-      response({status:400, message:'fail to send message'});
+      const timestamp = await sendMessage(io, userId, receiverId, message, isDirect)
+      if(timestamp){
+        response({status:200,timestamp:timestamp});
+      }else{
+        response({status:400, message:'fail to send message'});
+      }
     }
   });
 
   //emit 'groupChangeColor' event
-  socket.on('setBackground', (token, groupId, response) =>{
-    console.log('sendMessage');
-    if(!getUserIdFromAuth(token,socket.id)){response({status:400, message:'not authorize'}); return};
-    response({
-      status:200,
-      message: "sendMessage"
-    })
+  socket.on('setBackground', async(token, groupId, color, response) =>{
+    console.log('setBackground');
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
+    }else{
+      if(await changeGroupColor(io,userId,groupId,color)){
+        response({
+          status:200
+        });
+      }else{
+        response({
+          status:400,
+          message: "fail to change group color"
+        });
+      }
+    }
   });
 
   socket.on("disconnect", (reason) => {

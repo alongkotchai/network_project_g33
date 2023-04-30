@@ -1,188 +1,246 @@
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require("sqlite3").verbose();
+const {open} = require("sqlite")
 
 // open the database
-let db = new sqlite3.Database('./db/app.db', (err) => {
-  if (err) {
-    console.log(err, 'start database fail');
-    return;
-  }
-  console.log('Connected to the app database.');
-});
-
-db.serialize(() => {
-  console.log('create tables');
-  // Queries scheduled here will be serialized.
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
-            username TEXT NOT NULL  UNIQUE,
-            nickname TEXT NOT NULL,
-            password TEXT NOT NULL)`)
-    .run(`CREATE TABLE IF NOT EXISTS groups (
-            group_id INTEGER PRIMARY KEY,
-            group_name TEXT NOT NULL,
-            group_owner INTEGER NOT NULL,
-            group_color TEXT NOT NULL,
-            FOREIGN KEY (group_owner)
-              REFERENCES users (user_id) 
-            )`)
-    .run(`CREATE TABLE IF NOT EXISTS messages (
-            sender_id INTEGER NOT NULL,
-            receiver_id INTEGER NOT NULL,
-            is_direct INTEGER DEFAULT 0 NOT NULL,
-            message TEXT NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (sender_id) REFERENCES users (user_id)
-            )`)
-    .run(`CREATE TABLE IF NOT EXISTS join_groups(
-            group_id INTEGER NOT NULL,
-            user_id INTEGER NOT NULL,
-            FOREIGN KEY (group_id)
-              REFERENCES groups (group_id),
-            FOREIGN KEY (user_id)
-              REFERENCES users (user_id)
-            )`);
-})
-
-// db.close((err) => {
-//   if (err) {
-//     console.error(err.message);
-//   }
-//   console.log('Close the database connection.');
-// });
-
-exports.CreateUser = (u_name,n_name, pass)=>{
-  db.run(`INSERT INTO users(username,nickname,password) 
-          VALUES(?,?,?)`, 
-          [u_name,n_name,pass], function(err) {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return this.lastID;
-  });
-};
-
-exports.UpdateUserNickname = (u_id,new_name,)=>{
-  db.run(`UPDATE users SET nickname = ? 
-          WHERE user_id = ?`, 
-          [new_name,u_id], function(err) {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return true;
-  });
-};
-
-exports.CheckUser = (u_name, pass)=>{
-  db.each(`SELECT user_id FROM users 
-           WHERE username = ? 
-           AND password = ?`, 
-           [u_name,pass], (err, row) => {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return row;
-  });
-};
-
-exports.getUser = (user_id)=>{
-  db.each(`SELECT FROM users WHERE user_id = ?`, [user_id], (err, row) => {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return row;
-  });
+async function openDb () {
+  return open({
+    filename: './db/app.db',
+    driver: sqlite3.Database
+  })
 }
+console.log("Connected to the app database.");
+(async () => {
 
-exports.getAllUsers = ()=> {
-  db.all(`SELECT user_id, nickname FROM users`, [], (err, rows) =>{
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return rows;
-  });
-};
+  const db = await openDb();
 
-exports.CreateMessage = (sender_id,receiver_id,is_direct, message)=>{
-  db.run(`INSERT INTO messages(sender_id, receiver_id, is_direct, message) 
-          VALUES(?,?,?,?)`, 
-          [sender_id,receiver_id,is_direct,message], function(err) {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return true;
-  });
-};
-
-exports.GetMessages = (sender_id,receiver_id,is_direct)=>{
-  if(is_direct){
-    is_direct = parseInt(is_direct, 10);
-    db.all(`SELECT sender_id, receiver_id, message, timestamp 
-            FROM messages
-            WHERE (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
-            OR (sender_id = ? AND  receiver_id = ? AND  is_direct = ?)
-            ORDER BY timestamp`, 
-            [sender_id,receiver_id,is_direct,
-              receiver_id,sender_id,is_direct], (err, rows) => {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return rows;
-    });
-  }else{
-    is_direct = parseInt(is_direct, 10);
-    db.all(`SELECT sender_id, receiver_id, message, timestamp 
-            FROM messages
-            WHERE receiver_id = ? 
-            AND  is_direct = ?
-            ORDER BY timestamp`, [receiver_id,is_direct], (err, rows) => {
-    if (err) {
-      console.log(err.message);
-      return false;
-    }
-    return rows;
-    });
-  }
+  console.log("create tables");
+  await db.exec( `CREATE TABLE IF NOT EXISTS users (
+                  user_id INTEGER PRIMARY KEY,
+                  username TEXT NOT NULL  UNIQUE,
+                  nickname TEXT NOT NULL,
+                  password TEXT NOT NULL)`);
   
+  await db.exec( `CREATE TABLE IF NOT EXISTS groups (
+                  group_id INTEGER PRIMARY KEY,
+                  group_name TEXT NOT NULL,
+                  group_owner INTEGER NOT NULL,
+                  group_color TEXT NOT NULL,
+                  FOREIGN KEY (group_owner)
+                    REFERENCES users (user_id) )`);
+
+  await db.exec( `CREATE TABLE IF NOT EXISTS messages (
+                  sender_id INTEGER NOT NULL,
+                  receiver_id INTEGER NOT NULL,
+                  is_direct INTEGER DEFAULT 0 NOT NULL,
+                  message TEXT NOT NULL,
+                  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY (sender_id) 
+                    REFERENCES users (user_id) )`);
+  
+  await db.exec( `CREATE TABLE IF NOT EXISTS join_groups(
+                  group_id INTEGER NOT NULL,
+                  user_id INTEGER NOT NULL,
+                  FOREIGN KEY (group_id)
+                    REFERENCES groups (group_id),
+                  FOREIGN KEY (user_id)
+                    REFERENCES users (user_id) )`);
+})();
+
+exports.CreateUser = async(u_name, n_name, pass) => {
+  console.log('create user');
+  try{
+    const db = await openDb();
+    const result = await db.run(
+          `INSERT INTO users(username,nickname,password) 
+            VALUES(?,?,?)`,
+          [u_name, n_name, pass]
+    );
+    return result.lastID;
+  }catch(err){console.log(err);}
 };
 
-exports.GetGroups = ()=>{
-  db.all(`SELECT group_id,group_name,group_owner,group_color FROM groups`, [], (err, rows) => {
-  if (err) {
-    console.log(err.message);
-    return false;
-  }
-  return rows;
-  });
+exports.UpdateUserNickname = async(u_id, new_name) => {
+  console.log('update nickname');
+  try{
+    const db = await openDb();
+    const result = await db.run(
+          `UPDATE users SET nickname = ? 
+            WHERE user_id = ?`,
+          [new_name, u_id]
+    );
+    return result.changes;
+  }catch(err){console.log(err);}
 };
 
-exports.GetUserInGroup = (group_id)=>{
-  db.all(`SELECT user_id
-          FROM join_groups
-          WHERE group_id = ?,
-          INNER JOIN users ON join_rooms.user_id = rooms.user_id`, 
-          [group_id], (err, rows) => {
-  if (err) {
-    console.log(err.message);
-    return false;
-  }
-  return rows;
-  });
+exports.CheckUser = async(username, password) => {
+  console.log('chech user');
+  try{
+    const db = await openDb();
+    const result = await db.get(
+          `SELECT user_id, username, nickname FROM users 
+            WHERE username = ? 
+            AND password = ?`,
+          [username, password]
+    );
+    return (result)? result: false;
+  }catch(err){console.log(err);}
 };
 
-exports.JoinGroup = (user_id,group_id)=>{
-  db.all(`INSERT INTO join_groups(user_id, group_id) VALUES(?,?)`, 
-          [user_id,group_id], (err, rows) => {
-  if (err) {
-    console.log(err.message);
-    return false;
-  }
-  return true;
-  });
+exports.getUser = async(user_id) => {
+  console.log('get a user');
+  try{
+    const db = await openDb();
+    const result = await db.get(
+            `SELECT * FROM users WHERE user_id = ?`, 
+            [user_id]
+    );
+    return (result)? result : false;
+  }catch(err){console.log(err);}
+};
+
+exports.getAllUsers = async() => {
+  console.log('get users');
+  try{
+    const db = await openDb();
+    const result = await db.all(
+            `SELECT user_id, nickname FROM users`, 
+            []
+    );
+    return result;
+  }catch(err){console.log(err);}
+};
+
+exports.CreateMessage = async(sender_id, receiver_id, is_direct, message) => {
+  console.log('create message');
+  is_direct = (is_direct)? 1:0;
+  try{
+    const db = await openDb();
+    const result = await db.run(
+              `INSERT INTO messages(sender_id, receiver_id, is_direct, message) 
+                VALUES(?,?,?,?)`,
+              [sender_id, receiver_id, is_direct, message]
+    );
+    const tim = await db.get(
+              `SELECT timestamp FROM messages WHERE rowid = ?`, 
+              [result.lastID]
+    )
+    return tim.timestamp;
+  }catch(err){console.log(err);}
+};
+
+exports.GetMessages = async(is_direct, receiver_id, sender_id) => {
+  console.log('get messages');
+  try{
+    const db = await openDb();
+    if (is_direct) {
+      const result = await db.all(
+        `SELECT sender_id, receiver_id, message, timestamp FROM messages
+          WHERE (sender_id = ? AND  receiver_id = ? AND  is_direct = 1)
+          OR (sender_id = ? AND  receiver_id = ? AND  is_direct = 1)
+          ORDER BY timestamp`,
+        [sender_id, receiver_id, receiver_id, sender_id]
+      );
+      return result;
+    }else{
+      const result = await db.all(
+        `SELECT sender_id, receiver_id, message, timestamp 
+          FROM messages
+          WHERE receiver_id = ? 
+          AND  is_direct = 0
+          ORDER BY timestamp`,
+        [receiver_id]
+      );
+      return result;
+    }
+  }catch(err){console.log(err);}
+};
+
+exports.GetGroups = async() => {
+  console.log('get groups');
+  try{
+    const db = await openDb();
+    const result = await db.all(
+          `SELECT group_id,group_name,group_owner,group_color FROM groups`,
+          []
+    );
+    return result;
+  }catch(err){console.log(err);}
+};
+
+// exports.GetUserInGroup = (group_id) => {
+//   db.all(
+//     `SELECT user_id
+//      FROM join_groups
+//      WHERE group_id = ?,
+//      INNER JOIN users ON join_rooms.user_id = rooms.user_id`,
+//     [group_id],
+//     (err, rows) => {
+//       return err ? (console.log(err.message), false) : rows;
+//     }
+//   );
+// };
+
+exports.JoinGroup = async(user_id, group_id) => {
+  console.log('join group');
+  try{
+    const db = await openDb();
+    const result = await db.run(
+          `INSERT INTO join_groups(user_id, group_id) VALUES(?,?)`,
+          [user_id, group_id]
+    );
+    return (result.lastID)? true : false;
+  }catch(err){console.log(err);}
+};
+
+exports.CreateGroup = async(group_name, group_owner, group_color) => {
+  console.log('create group');
+  try{
+    const db = await openDb();
+    const result = await db.run(
+          `INSERT INTO groups (group_name,group_owner,group_color) VALUES(?,?,?)`,
+          [group_name, group_owner, group_color]
+    );
+    return result.lastID;
+  }catch(err){console.log(err);}
+};
+
+exports.IsUserInGroup = async(group_id,user_id) => {
+  console.log('is in groups');
+  try{
+    const db = await openDb();
+    const result = await db.all(
+          `SELECT * FROM join_groups
+            WHERE group_id = ? AND user_id = ?`,
+          [group_id,user_id]
+    );
+    return (result.length>0);
+  }catch(err){console.log(err);}
+};
+
+exports.UpdateGroupColor = async(group_id, new_color) => {
+  console.log('update group color');
+  try{
+    const db = await openDb();
+    const result = await db.run(
+          `UPDATE groups SET group_color  = ? 
+            WHERE group_id = ?`,
+          [new_color, group_id]
+    );
+    return result.changes;
+  }catch(err){console.log(err);}
+};
+
+exports.getJoinedGroups = async(user_id) => {
+  console.log('get joined groups');
+  try{
+    const db = await openDb();
+    const result = await db.all(
+            `SELECT join_groups.group_id
+              FROM join_groups
+              INNER JOIN groups ON groups.group_id = join_groups.group_id
+              WHERE user_id = ?`,
+            [user_id]
+    );
+    return result;
+  }catch(err){console.log(err);}
 };

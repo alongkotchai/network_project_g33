@@ -1,4 +1,4 @@
-const {CreateUser, CheckUser,getUser, getAllUsers, UpdateUserNickname} = require('../db/db');
+const {CreateUser, CheckUser,getUser, getAllUsers, UpdateUserNickname, getJoinedGroups} = require('../db/db');
 
 let session = new Map();
 let index = 1000000;
@@ -20,13 +20,14 @@ exports.getSocktFromUserId = (userId)=>{
     }
 };
 
-exports.authToken = (token, socketId) =>{
+exports.authToken = async(token, socket) =>{
     token = parseInt(token, 10);
     if(session.has(token)){
         let user = session.get(token);
-        user.socketId = socketId;
-        deleteSession(socketId);
+        user.socketId = socket.id;
+        deleteSession(socket.id);
         session.set(token,temp);
+        await setupSocketRoomsOnFirstConnect(socket,user.userId);
         return {token:token,
                 userId:user.userId, 
                 username:user.username, 
@@ -44,16 +45,16 @@ exports.getUserIdFromAuth = (token, socketId)=>{
     }
 }
 
-exports.authUser = (username, password, socketId) =>{
-    const user = CheckUser(username,password);
+exports.authUser = async(username, password, socket) =>{
+    const user = await CheckUser(username,password);
     if(user){
-        deleteSession(socketId);
+        deleteSession(socket.id);
         index += 1;
         session.set(index,{userId:user.user_id,
                            username:user.username,
                            nickname:user.nickname,
-                           socketId:socketId});
-
+                           socketId:socket.id});
+        await setupSocketRoomsOnFirstConnect(socket,user.user_id);
         return {token:index.toString(),
                 userId:user.user_id, 
                 username:user.username, 
@@ -61,9 +62,10 @@ exports.authUser = (username, password, socketId) =>{
     }
 };
 
-exports.getAllUsers = () =>{
+exports.getAllUsers = async() =>{
     let usersList = Array();
-    const users = getAllUsers();
+    const users = await getAllUsers();
+    if(!users){return false;}
     users.forEach(user => {
         usersList.push({userId:user.user_id,nickname:user.nickname});
     });
@@ -71,8 +73,8 @@ exports.getAllUsers = () =>{
 };
 
 //emit 'newUser' event
-exports.registerUser = (username, nickname, password, socket) =>{
-    const id = CreateUser(username,nickname,password);
+exports.registerUser = async(username, nickname, password, socket) =>{
+    const id = await CreateUser(username,nickname,password);
     if(id){
         deleteSession(socket.id);
         index += 1;
@@ -80,10 +82,9 @@ exports.registerUser = (username, nickname, password, socket) =>{
                            username:username,
                            nickname:nickname,
                            socketId:socket.id});
-
         socket.broadcast.emit('newUser',{userId:id,
                                          nickname:nickname});
-
+        await setupSocketRoomsOnFirstConnect(socket,id);
         return {token:index.toString(),
                 userId:id, 
                 username:username, 
@@ -92,26 +93,27 @@ exports.registerUser = (username, nickname, password, socket) =>{
 };
 
 //emit 'userChangeNickname' event
-exports.setNickname = (token,socket, nickname) =>{
+exports.setNickname = async(token,socket, nickname) =>{
     token = parseInt(token, 10);
     const userId = this.getUserIdFromAuth(token,socket.id);
     if(!userId){return false;}
-    const result = UpdateUserNickname(userId,nickname);
+    const result = await UpdateUserNickname(userId,nickname);
     if(result){
         let user = session.get(token);
         user.nickname = nickname;
         session.set(token,user);
         socket.broadcast.emit('userChangeNickname',
-                              {userId:id,
+                              {userId:userId,
                                nickname:nickname});
         return {nickname:user.nickname};
     }
 };
 
-exports.logoutUser = (token) =>{
+exports.logoutUser = (token,socketId) =>{
     token = parseInt(token, 10);
     if(session.has(token)){
         session.delete(token);
+        deleteSession(socketId);
         return true;
     }
 };
@@ -125,5 +127,19 @@ function deleteSession(socketId){
     }
     s.forEach((token)=>{
         session.delete(token);
+    });
+}
+
+async function setupSocketRoomsOnFirstConnect(socket,userId){
+    const joinedGroups = await getJoinedGroups(userId);
+    const rooms = socket.rooms;
+    for (const room of rooms) {
+        if(room.slice(0, 2) == "g:"){
+            socket.leave(room)
+        }
+      }
+    if(!joinedGroups){return;}
+    joinedGroups.forEach((group)=>{
+        socket.join("g:"+group.group_id.toString());
     });
 }

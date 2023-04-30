@@ -1,41 +1,43 @@
-// const {createMessage, GetMessages} = require('../db/db');
-const {getUserFromId} = require('./user');
-const {getGroupFromId} = require('./group');
+const {CreateMessage, GetMessages, IsUserInGroup} = require('../db/db');
+const {getUserFromId,getSocktFromUserId} = require('./user');
 
-//not use
-let messages = Array();
-
-exports.sendMessage = (senderId, receiverId, message, is_direct) =>{
-    if(is_direct){
+// emit
+exports.sendMessage = async(io,senderId, receiverId, message, isDirect) =>{
+    console.log('sendMessage')
+    if(isDirect){
         const target = getUserFromId(receiverId);
+        const onSocketId = getSocktFromUserId(receiverId);
         if(target){
-            let timestamp = new Date();
-            timestamp = timestamp.toISOString();
-            let mes = {senderId:senderId,message:message,timestamp:timestamp};
-            io.to(target.socketId).emit("directMessage",mes);
-            // createMessage(senderId,receiverId,parseInt(is_direct, 10),message);
-            mes.receiverId = receiverId;
-            messages.push(mes);
-            return true;
+            const timestamp = await CreateMessage(senderId,receiverId,isDirect,message);
+            if(onSocketId){
+                io.to(onSocketId).emit("directMessage",{senderId:senderId,
+                                                        message:message,
+                                                        timestamp:timestamp});
+            }
+            return timestamp;
         }
     }else{
-        const targetId = getGroupFromId(receiverId);
-        if(targetId){
-            let timestamp = new Date();
-            timestamp = timestamp.toISOString();
-            let mes = {senderId:senderId,groupId:targetId,message:message,timestamp:timestamp};
-            io.in('g-' + targetId).emit("groupMessage",mes);
-            mes.receiverId = receiverId;
-            messages.push(mes);
-            return true;
+        if(IsUserInGroup(receiverId,senderId)){
+            const timestamp = await CreateMessage(senderId,receiverId,isDirect,message);
+            io.in('g:' + receiverId.toString()).emit("groupMessage",{senderId:senderId,
+                                                                     groupId:receiverId,
+                                                                     message:message,
+                                                                     timestamp:timestamp});
+            return timestamp;
         }
     }
 };
 
-exports.getMessageHistory = (is_direct, receiverId, senderId) =>{
-    if(is_direct){
-        return messages;
-    }else{
-        return messages;
+exports.getMessageHistory = async(isDirect, receiverId, senderId) =>{
+    console.log("GetMessage")
+    let messageList = Array();
+    const messages = await GetMessages(isDirect,receiverId,senderId);
+    if(!messages){return false;}
+    for(const m of messages){
+        messageList.push({senderId:m.sender_id,
+                          receiverId:m.receiver_id,
+                          message:m.message,
+                          timestamp:m.timestamp});
     }
+  return messageList;
 };
