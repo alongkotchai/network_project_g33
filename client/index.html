@@ -99,6 +99,25 @@
             </div>
         </div>
 
+        <!-- link to create group popup-->
+        <div id="addgroup-pop" class="w3-modal">
+            <div class="w3-modal-content w3-card-4 w3-animate-zoom" style="max-width:600px">
+        
+              <div class="w3-center"><br>
+                <span onclick="document.getElementById('addgroup-pop').style.display='none'" class="w3-button w3-xlarge w3-hover-red w3-display-topright" title="Close Modal">&times;</span>
+               </div>
+
+            <div class="w3-container">
+              <div class="w3-section">
+                <h2>Create New Group</h2>
+                <label><b>New Group Name</b></label>
+                <input id="addgroup-n" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Group Name" name="grpname" required>
+                <button id="addgroup-btn" class="w3-button w3-block w3-green w3-section w3-padding">Add Group</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
     </div>
     <div id="chat-panel" class="w3-border">
         <div id="lobby"></div>
@@ -127,7 +146,7 @@
         var to_nick_btn = document.getElementById('to-nick-btn');
         var to_login_btn = document.getElementById("to-login-btn");
         var to_regist_btn = document.getElementById("to-regist-btn");
-        
+            
         to_logout_btn.style.display = "none";
         to_nick_btn.style.display = "none";
 
@@ -148,9 +167,9 @@
                         const users_response = response;
                         const token = localStorage.getItem("t-box");
                         socket.emit('getGroups',token,(groups_response)=>{
-                            console.log(groups_response);
+                            console.log(groups_response.groups);
                             console.log(users_response.users);
-                            renderLobby([], users_response.users);
+                            renderLobby(groups_response.groups, users_response.users);
                         });         
                     });
                 }
@@ -240,24 +259,29 @@
             
         });
 
-        document.getElementById("send-btn").addEventListener('click',()=>{
-            const token = document.getElementById("t-box").value;
-            const rec = document.getElementById("r-box").value;
-            const di = document.getElementById("d-box").value == "1";
-            const message = document.getElementById("ms-box").value;
-            socket.emit("sendMessage",token,di,rec,message,(response)=>{
-                print('sendMessage',response);
-            });
-        });
-
-        // document.getElementById("g-btn").addEventListener('click',()=>{
+        // document.getElementById("send-btn").addEventListener('click',()=>{
         //     const token = document.getElementById("t-box").value;
-        //     const name = document.getElementById("g-box").value;
-        //     const color = document.getElementById("c-box").value;
-        //     socket.emit("createGroup",token,name,color,(response)=>{
-        //         print('createGroup',response);
+        //     const rec = document.getElementById("r-box").value;
+        //     const di = document.getElementById("d-box").value == "1";
+        //     const message = document.getElementById("ms-box").value;
+        //     socket.emit("sendMessage",token,di,rec,message,(response)=>{
+        //         print('sendMessage',response);
         //     });
         // });
+
+        document.getElementById("addgroup-btn").addEventListener('click',()=>{
+            const token = localStorage.getItem("t-box");
+            const name = document.getElementById("addgroup-n").value;
+            const color = "#e0ffee";
+            socket.emit("createGroup",token,name,color,(response)=>{
+                console.log(response);
+            });
+
+            var addgroup_pop = document.getElementById("addgroup-pop")
+            addgroup_pop.style.display = "none";
+
+            
+        });
 
         // document.getElementById("gc-btn").addEventListener('click',()=>{
         //     const token = document.getElementById("t-box").value;
@@ -295,7 +319,7 @@
             for(var idx in groupData) {
                 var groupchat_box = document.createElement("button");
                 var chat_name = document.createElement("span");
-                chat_name.textContent = groupData[idx].name ;
+                chat_name.textContent = groupData[idx].groupName ;
                 groupchat_box.appendChild(chat_name);
                 groupchat_box.classList.add("w3-button", "w3-teal");
                 lobby_zone.appendChild(groupchat_box);
@@ -303,6 +327,8 @@
 
             var create_group_button = document.createElement("button");
             create_group_button.classList.add("w3-button", "w3-black");
+            create_group_button.setAttribute("id", "to-addgroup-btn");
+            create_group_button.setAttribute("onclick", "document.getElementById('addgroup-pop').style.display='block'")
             create_group_button.textContent = "+";
             lobby_zone.appendChild(create_group_button);
 
