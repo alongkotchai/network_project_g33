@@ -489,9 +489,15 @@
 
         colorPicker.addEventListener("input", getColor);
 
+        socket.on("welcome", (...args) => {
+            let m = args[0];
+            console.log(m);
+        });
+
         socket.on("directMessage", (...args) => {
             const m = args[0];
             let sender_nickname = "";
+            console.log(args)
             for (let idx_user in users) {
                 if (users[idx_user].userId == m.senderId) {
                     sender_nickname = users[idx_user].nickname;
