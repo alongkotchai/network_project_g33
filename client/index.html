@@ -29,6 +29,7 @@
                   <input id="login-u" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter Username" required>
                   <label><b>Password</b></label>
                   <input id="login-p" class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" required>
+                  <label id="login-msg"></label>
                   <button id="login-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Login</button>
                 </div>
               </div>
@@ -53,6 +54,7 @@
                   <input id="regist-p" class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" name="psw" required>
                   <label><b>Nickname</b></label>
                   <input id="regist-n" class="w3-input w3-border" type="text" placeholder="Enter Nickname" name="nckname" required>
+                  <label id="regist-msg"></label>
                   <button id="regist-btn" class="w3-button w3-block w3-green w3-section w3-padding">Register</button>
                 </div>
               </div>
@@ -73,6 +75,7 @@
                   <h2>Change Nickname</h2>
                   <label><b>New Nickname</b></label>
                   <input id="nickname-n" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Nickname" name="nckname" required>
+                  <label id="nick-msg"></label>
                   <button id="nick-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Change Nickname</button>
                 </div>
               </div>
@@ -110,6 +113,7 @@
                 <h2>Create New Group</h2>
                 <label><b>New Group Name</b></label>
                 <input id="addgroup-n" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Group Name" name="grpname" required>
+                <label id="addgroup-msg"></label>
                 <button id="addgroup-btn" class="w3-button w3-block w3-green w3-section w3-padding">Add Group</button>
               </div>
             </div>
@@ -165,6 +169,9 @@
                     to_nick_btn.style.display = "inline";
                     to_logout_btn.style.display = "inline";
 
+                    var login_pop = document.getElementById("login-pop");
+                    login_pop.style.display = "none";
+
                     socket.emit('getUsers',(response)=>{
                         const users_response = response;
                         const token = localStorage.getItem("t-box");
@@ -176,13 +183,15 @@
                             renderLobby(groups_response.groups, users_response.users);
                         });         
                     });
+
+                    document.getElementById('login-msg').innerHTML = "";
+
+                } else {
+                    document.getElementById('login-msg').innerHTML = "Login failed. pls check username or password."
                 }
                 console.log(response);
             });
             }
-
-            var login_pop = document.getElementById("login-pop");
-            login_pop.style.display = "none";
 
             document.getElementById("login-u").value = "";
             document.getElementById("login-p").value = "";
@@ -193,7 +202,7 @@
             const nickname = document.getElementById("regist-n").value;
             const password = document.getElementById("regist-p").value;
             socket.emit('register',username,password,nickname,(response)=>{
-                if(response.status == 200){
+                if(response.status == 200 && username && nickname && password){
                     localStorage.setItem("t-box", response.auth.token);
 
                     socket.emit('getUsers',(response)=>{
@@ -215,6 +224,14 @@
                     to_regist_btn.style.display = "none";
                     to_nick_btn.style.display = "inline";
                     to_logout_btn.style.display = "inline";
+
+                    document.getElementById("regist-u").value = "";
+                    document.getElementById("regist-p").value = "";
+                    document.getElementById("regist-n").value = "";
+
+                    document.getElementById("regist-msg").innerHTML = "";
+                } else {
+                    document.getElementById("regist-msg").innerHTML = "pls enter all data above";
 
                     document.getElementById("regist-u").value = "";
                     document.getElementById("regist-p").value = "";
@@ -241,27 +258,34 @@
         document.getElementById("nick-btn").addEventListener('click',()=>{
             const token = localStorage.getItem("t-box");
             const nickname = document.getElementById("nickname-n").value;
-            socket.emit('setNickname',token,nickname,(response)=>{
-                while(lobby.firstChild){
-                    lobby.removeChild(lobby.firstChild);
-                }
-                socket.emit('getUsers',(response)=>{
-                    const users_response = response;
-                    const token = localStorage.getItem("t-box");
-                    socket.emit('getGroups',token,(groups_response)=>{
-                        console.log(groups_response.groups);
-                        console.log(users_response.users);
-                        users = users_response.users;
-                        groups = groups_response.groups;
-                        renderLobby(groups_response.groups, users_response.users);
-                    });         
-                });
-                console.log(response);
-            });
+            if(nickname){
+                socket.emit('setNickname',token,nickname,(response)=>{
+                    while(lobby.firstChild){
+                        lobby.removeChild(lobby.firstChild);
+                    }
+                    socket.emit('getUsers',(response)=>{
+                        const users_response = response;
+                        const token = localStorage.getItem("t-box");
+                        socket.emit('getGroups',token,(groups_response)=>{
+                            console.log(groups_response.groups);
+                            console.log(users_response.users);
+                            users = users_response.users;
+                            groups = groups_response.groups;
+                            renderLobby(groups_response.groups, users_response.users);
+                        });         
+                    });
+                    
+                    document.getElementById('nick-msg').innerHTML = "";
+                    var nickname_pop = document.getElementById('nickname-pop');
+                    nickname_pop.style.display = "none";
+                    console.log(response);
+                })
 
-            var nickname_pop = document.getElementById('nickname-pop');
-            nickname_pop.style.display = "none";
-            document.getElementById("nickname-n").value = "";
+            } else {
+                document.getElementById('nick-msg').innerHTML = "Nickname can't be blank."
+            }
+                document.getElementById("nickname-n").value = "";
+                
         });
 
         document.getElementById("logout-btn").addEventListener('click',()=>{
@@ -311,28 +335,34 @@
             const token = localStorage.getItem("t-box");
             const name = document.getElementById("addgroup-n").value;
             const color = "#e0ffee";
-            socket.emit("createGroup",token,name,color,(response)=>{
-                var lobby = document.getElementById('lobby')
-                while(lobby.firstChild){
-                    lobby.removeChild(lobby.firstChild);
-                }
-                socket.emit('getUsers',(response)=>{
-                    const users_response = response;
-                    const token = localStorage.getItem("t-box");
-                    socket.emit('getGroups',token,(groups_response)=>{
-                        console.log(groups_response.groups);
-                        console.log(users_response.users);
-                        users = users_response.users;
-                        groups = groups_response.groups;
-                        renderLobby(groups_response.groups, users_response.users);
-                    });         
-                });  
-                console.log(response);
-            });
+            if(name){
+                socket.emit("createGroup",token,name,color,(response)=>{
+                    var lobby = document.getElementById('lobby')
+                    while(lobby.firstChild){
+                        lobby.removeChild(lobby.firstChild);
+                    }
+                    socket.emit('getUsers',(response)=>{
+                        const users_response = response;
+                        const token = localStorage.getItem("t-box");
+                        socket.emit('getGroups',token,(groups_response)=>{
+                            console.log(groups_response.groups);
+                            console.log(users_response.users);
+                            users = users_response.users;
+                            groups = groups_response.groups;
+                            renderLobby(groups_response.groups, users_response.users);
+                        });         
+                    });  
+                
+                    var addgroup_pop = document.getElementById("addgroup-pop")
+                    addgroup_pop.style.display = "none";
+                    document.getElementById("addgroup-n").value = "";
 
-            var addgroup_pop = document.getElementById("addgroup-pop")
-            addgroup_pop.style.display = "none";
-            document.getElementById("addgroup-n").value = "";
+                    document.getElementById("addgroup-msg").innerHTML = "";
+                    console.log(response);
+                }
+            )} else {
+                document.getElementById("addgroup-msg").innerHTML = "Group Chat Name Can't be empty.";
+            }    
         });
 
         // document.getElementById("gc-btn").addEventListener('click',()=>{
