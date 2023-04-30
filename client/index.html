@@ -12,7 +12,7 @@
     <title>Client</title>
 </head>
 <body>
-    <div id="account">
+    <div id="account" class="w3-padding">
         <label for="u-box">username:</label>
         <input type="text" id="u-box" name="u-box">
         <label for="n-box">nickname:</label>
@@ -26,8 +26,8 @@
     <div id="chat-panel" class="w3-border">
         <div id="lobby"></div>
         <div id="message">
-            <div id="display-message"></div>
-            <div id="message-bottom">
+            <div id="display-message" class="w3-padding"></div>
+            <div id="message-bottom" class="w3-padding w3-border-top">
                 <div id="color-picker">
                     <label for="colorPicker">Choose a color: <code id="colorCode"></code> </label>
                     <input type="color" value="#e0ffee" id="colorPicker">
@@ -47,16 +47,6 @@
         const socket = io.connect("ws://localhost:5001",{auth: {token: "1"}});
 
         socket.emit("greeting",{ status:200, message:"Hello Server"});
-
-        socket.on("welcome", (...args) => {
-            let m = args[0];
-            document.getElementById("message").innerHTML += `<h3>Server: Status ${m.status} Message: ${m.message}</h3>`
-        });
-
-        socket.on("broadcast-all", (...args) => {
-            let m = args[0];
-            document.getElementById("message").innerHTML += `<h3>${m.sender} : ${m.message}</h3>`
-        });
 
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("u-box").value;
@@ -144,9 +134,11 @@
                 message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large")
                 message_zone.appendChild(sender_box)
                 message_zone.appendChild(message_box)
-                message_zone.classList.add("chat-zone")
+                message_zone.classList.add("chat-zone", "w3-margin-bottom")
                 if (data[idx].sender == my_id) {
                     message_box.classList.add("w3-light-grey")
+                    message_zone.classList.add("w3-right")
+                    //sender_box.classList.add("w3-right")
                 }
                 chat_zone.appendChild(message_zone)
             }

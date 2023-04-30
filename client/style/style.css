@@ -10,7 +10,6 @@ body {
 }
 
 #lobby {
-    width: 300px;
     display: flex;
     flex-direction: column;
     width: 200px;
@@ -19,14 +18,16 @@ body {
 }
 
 #message {
-    display: grid;
-    grid-template-rows: auto 50px;
-    width : auto;
+    display: flex;
+    flex-direction: column;
 }
 
 #display-message {
     background-color: azure;
     overflow-y: scroll;
+    flex-grow: 10;
+    display: flex;
+    flex-direction: column;
 }
 
 #message-bottom {
@@ -44,10 +45,6 @@ body {
     margin-left: 10px;
 }
 
-#color-picker {
-    padding-top: 10px;
-}
-
 #chat-panel {
     display: grid;
     flex-direction: row;
@@ -61,33 +58,13 @@ body {
     padding-bottom: 10px;
 }
 
-#u-box {
-    margin-right: 10px;
-}
-
-#n-box {
-    margin-right: 10px;
-}
-
-#p-box {
-    margin-right: 10px;
-}
-
 #ms-box {
     min-width: min-content;
 }
 
-.chat-zone {
-    margin: 10px;
-}
-
-.chat-zone > span {
-    
-}
-
 .chat-zone > div {
     background-color: cadetblue;
-    max-width: 200px;
+    max-width: 500px;
     border-radius: 5px;
     padding: 5px;
     display: grid;
