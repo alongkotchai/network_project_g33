@@ -158,6 +158,7 @@
         var current_user_id;
         var current_reciever_id;
         var current_direct = false;
+        var message_log = [];
 
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("login-u").value;
@@ -321,14 +322,15 @@
             const rec = current_reciever_id;
             const message = document.getElementById("ms-box").value;
             document.getElementById("ms-box").value = "";
-            if (current_direct) {
-                renderChat([{
-                    message: message,
-                    senderId: current_user_id
-                }]);
-            }
             socket.emit("sendMessage",token,current_direct,rec,message,(response)=>{
-                console.log('sendMessage',response);
+                if (response.status == 200 && current_direct) {
+                    const new_message = {
+                        message: message,
+                        senderId: current_user_id,
+                        timestamp: response.timestamp
+                    };
+                    renderChat([new_message]);
+                }
             });
         });
         
@@ -407,9 +409,9 @@
                                     lobby.removeChild(lobby.firstChild);
                                 }
                                 renderLobby(groups, users);
-                                socket.emit("getMessages", token, false, id, (response) => {
-                                    if (response.status == 200) {
-                                        renderChat(response.messages, true);
+                                socket.emit("getMessages", token, false, id, (get_message_response) => {
+                                    if (get_message_response.status == 200) {
+                                        renderChat(get_message_response.messages, true);
                                     }
                                 });
                             }
@@ -454,11 +456,13 @@
         var chat_zone = document.getElementById("display-message")
         function renderChat(data, clear=false) {
             if (clear) {
+                message_log = []
                 while(chat_zone.lastChild) {
                     chat_zone.removeChild(chat_zone.lastChild)
                 }
             }
             for (let idx in data) {
+                message_log.push(data[idx])
                 var message_zone = document.createElement("div")
                 var sender_box = document.createElement("span")
                 var message_box = document.createElement("div")
@@ -538,15 +542,20 @@
                 lobby.removeChild(lobby.firstChild);
             }
             socket.emit('getUsers',(response)=>{
-                const users_response = response;
-                const token = localStorage.getItem("t-box");
-                socket.emit('getGroups',token,(groups_response)=>{
-                    console.log(groups_response.groups);
-                    console.log(users_response.users);
-                    users = users_response.users;
-                    groups = groups_response.groups;
-                    renderLobby(groups_response.groups, users_response.users);
-                });         
+                if (response == 200) {
+                    const users_response = response;
+                    const token = localStorage.getItem("t-box");
+                    socket.emit('getGroups',token,(groups_response)=>{
+                        console.log(groups_response.groups);
+                        console.log(users_response.users);
+                        users = users_response.users;
+                        groups = groups_response.groups;
+                        renderLobby(groups_response.groups, users_response.users);
+                        if (current_direct && current_reciever_id == m.userId) {
+                            renderChat(message_log, true);
+                        }
+                    });    
+                }           
             });
         });
 
