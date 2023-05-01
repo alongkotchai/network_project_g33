@@ -266,6 +266,7 @@
                             users = users_response.users;
                             groups = groups_response.groups;
                             renderLobby(groups_response.groups, users_response.users);
+                            renderChat(message_log, true);
                         });         
                     });
                     
@@ -559,8 +560,9 @@
                     users = users_response.users;
                     groups = groups_response.groups;
                     renderLobby(groups_response.groups, users_response.users);
+                    renderChat(message_log, true);
                     if (current_direct && current_reciever_id == m.userId) {
-                        renderChat(message_log, true);
+                        chatName.innerHTML = m.nickname + "(Direct Message)";
                     }
                 });             
             });
