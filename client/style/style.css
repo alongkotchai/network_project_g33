@@ -80,3 +80,26 @@ body {
     flex-direction: row;
     gap: 0 10px;
 }
+
+#addgroup-msg {
+    color: red;
+}
+
+#display-message > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px 0;
+}
+
+#display-message > div.me {
+    align-self: end;
+    align-items: end;
+}
+
+.message-box {
+    width: fit-content;
+}
+
+.timestamp {
+    font-size: 10px;
+}
