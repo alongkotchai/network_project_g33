@@ -310,6 +310,7 @@
             const token = localStorage.getItem("t-box");
             const rec = current_reciever_id;
             const message = document.getElementById("ms-box").value;
+            if (message == "") return;
             document.getElementById("ms-box").value = "";
             socket.emit("sendMessage",token,current_direct,rec,message,(response)=>{
                 if (response.status == 200 && current_direct) {
@@ -451,6 +452,9 @@
             }
 
             let last_sender_id = -1;
+            if (message_log.length > 0) {
+                last_sender_id = message_log[message_log.length - 1].senderId;
+            }
             for (let idx in data) {
                 message_log.push(data[idx])
                 var message_zone = document.createElement("div")
