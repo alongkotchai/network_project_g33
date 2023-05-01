@@ -528,24 +528,22 @@
         socket.on("userChangeNickname", (...args) => {
             const m = args[0];
             console.log(m);
+            const token = localStorage.getItem("t-box");
             while(lobby.firstChild){
                 lobby.removeChild(lobby.firstChild);
             }
-            socket.emit('getUsers',(response)=>{
-                if (response == 200) {
-                    const users_response = response;
-                    const token = localStorage.getItem("t-box");
-                    socket.emit('getGroups',token,(groups_response)=>{
-                        console.log(groups_response.groups);
-                        console.log(users_response.users);
-                        users = users_response.users;
-                        groups = groups_response.groups;
-                        renderLobby(groups_response.groups, users_response.users);
-                        if (current_direct && current_reciever_id == m.userId) {
-                            renderChat(message_log, true);
-                        }
-                    });    
-                }           
+            socket.emit('getUsers', (response)=>{
+                const users_response = response;
+                socket.emit('getGroups',token,(groups_response)=>{
+                    console.log(groups_response.groups);
+                    console.log(users_response.users);
+                    users = users_response.users;
+                    groups = groups_response.groups;
+                    renderLobby(groups_response.groups, users_response.users);
+                    if (current_direct && current_reciever_id == m.userId) {
+                        renderChat(message_log, true);
+                    }
+                });             
             });
         });
 
