@@ -466,6 +466,7 @@
                 var message_zone = document.createElement("div")
                 var sender_box = document.createElement("span")
                 var message_box = document.createElement("div")
+                var time_box = document.createElement("span")
 
                 let sender_nickname = "";
                 for (let idx_user in users) {
@@ -475,11 +476,14 @@
                     }
                 }
 
+                console.log(data[idx]);
                 sender_box.textContent = sender_nickname;
                 message_box.textContent = data[idx].message;
                 message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large");
+                time_box.textContent = data[idx].timestamp.slice(0,-3);
                 message_zone.appendChild(sender_box);
                 message_zone.appendChild(message_box);
+                message_zone.appendChild(time_box);
                 message_zone.classList.add("chat-zone", "w3-margin-bottom");
                 if (data[idx].sender == my_id) {
                     message_box.classList.add("w3-light-grey");
