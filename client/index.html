@@ -132,7 +132,7 @@
                 <div id="color-picker">
                     <label for="colorPicker">Choose a color: <code id="colorCode"></code> </label>
                     <input type="color" value="#e0ffee" id="colorPicker">
-                    <button id="color-btn" class="w3-small-button w3-teal w3-round-xxlarge">change color</button>
+                    <button id="color-btn" class="w3-small-button w3-teal w3-round-xxlarge" disabled>change color</button>
                 </div>    
                 <div id="message-input">
                     <input type="text" id="ms-box" name="ms-box">
@@ -145,13 +145,13 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io.connect("ws://192.168.1.34:5001");
+        const socket = io.connect("ws://192.168.43.44:5001");
 
         var to_logout_btn = document.getElementById('to-logout-btn');
         var to_nick_btn = document.getElementById('to-nick-btn');
         var to_login_btn = document.getElementById("to-login-btn");
         var to_regist_btn = document.getElementById("to-regist-btn");
-
+        
         var my_id;
         var chatName = document.getElementById("chat-name")
         var users;
@@ -376,11 +376,25 @@
                     groupchat_box.classList.add("w3-grey");
                 }
                 groupchat_box.addEventListener("click", function() {
+                    colorButton.disabled = false;
                     let id = groupData[idx_lobby].groupId;
                     let isJoined = groupData[idx_lobby].isJoined;
+                    
                     current_reciever_id = id;
                     current_direct = false;
                     chatName.innerHTML = groupData[idx_lobby].groupName;
+
+                    let color = "";
+                    for (let idx_group in groups) {
+                        if (groups[idx_group].groupId == id) {
+                            color = groups[idx_group].color;
+                            break;
+                        }
+                    }
+                    document.getElementById("display-message").style.backgroundColor = color;
+                    document.getElementById("message").style.backgroundColor = color;
+                    document.getElementById("message-bottom").style.backgroundColor = color;
+
                     if (isJoined) {
                         socket.emit("getMessages", token, false, id, (response) => {
                             if (response.status == 200) {
@@ -427,6 +441,10 @@
                 user_box.appendChild(user_name);
                 user_box.classList.add("w3-button", "w3-grey");
                 user_box.addEventListener("click", () => {
+                    colorButton.disabled = true;
+                    document.getElementById("display-message").style.backgroundColor = "azure";
+                    document.getElementById("message").style.backgroundColor = "azure";
+                    document.getElementById("message-bottom").style.backgroundColor = "azure";
                     let id = userData[idx_user].userId;
                     current_reciever_id = id;
                     current_direct = true;
@@ -503,6 +521,7 @@
         //set chat color
         const colorPicker = document.getElementById("colorPicker");
         const colorCode = document.getElementById("colorCode");
+        const colorButton = document.getElementById("color-btn");
 
         function getColor() {
             colorCode.innerHTML = colorPicker.value;
@@ -512,6 +531,11 @@
             document.getElementById("display-message").style.backgroundColor = colorPicker.value;
             document.getElementById("message").style.backgroundColor = colorPicker.value;
             document.getElementById("message-bottom").style.backgroundColor = colorPicker.value;
+            const token = localStorage.getItem("t-box");
+            console.log(token, current_reciever_id, colorPicker.value)
+            socket.emit("setBackground", token, current_reciever_id, colorPicker.value, (set_bg_reponse) => {
+                console.log(set_bg_reponse)
+            });
         });
 
         colorPicker.addEventListener("input", getColor);
@@ -590,8 +614,23 @@
 
         socket.on("groupMessage", (...args) => {
             const m = args[0];
-            if (m.groupId == current_reciever_id) {
+            if ((!current_direct) && m.groupId == current_reciever_id) {
                 renderChat([m]);
+            }
+        });
+
+        socket.on("groupChangeColor", (...args) => {
+            const m = args[0];
+            for (let idx in groups) {
+                if (groups[idx].groupId == m.groupId) {
+                    groups[idx].color = m.color;
+                    break;
+                }
+            }
+            if ((!current_direct) && m.groupId == current_reciever_id) {
+                document.getElementById("display-message").style.backgroundColor = m.color;
+                document.getElementById("message").style.backgroundColor = m.color;
+                document.getElementById("message-bottom").style.backgroundColor = m.color;
             }
         });
 
