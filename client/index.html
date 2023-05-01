@@ -246,20 +246,6 @@
             });
         });
 
-        // document.getElementById("users-btn").addEventListener('click',()=>{
-        //     socket.emit('getUsers',(response)=>{
-        //         print('getUsers',response);
-        //     });
-        // });
-
-        // document.getElementById("groups-btn").addEventListener('click',()=>{
-        //     const token = document.getElementById("t-box").value;
-        //     socket.emit('getGroups',token,(response)=>{
-        //         print('getGroup',response);
-        //     });
-        // });
-
-
         document.getElementById("nick-btn").addEventListener('click',()=>{
             const token = localStorage.getItem("t-box");
             const nickname = document.getElementById("nickname-n").value;
@@ -298,7 +284,7 @@
             socket.emit('logout',token,(response)=>{
                 console.log(response);
                 if(response.status == 200){
-                    renderChat([]);
+                    renderChat([], true);
                     var lobby = document.getElementById('lobby')
                     while(lobby.firstChild){
                         lobby.removeChild(lobby.firstChild);
