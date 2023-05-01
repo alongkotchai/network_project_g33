@@ -570,7 +570,9 @@
 
         socket.on("groupMessage", (...args) => {
             const m = args[0];
-            console.log(args)
+            if (m.groupId == current_reciever_id) {
+                renderChat([m]);
+            }
         });
 
     </script>
