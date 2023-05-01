@@ -320,12 +320,10 @@
             const rec = current_reciever_id;
             const message = document.getElementById("ms-box").value;
             document.getElementById("ms-box").value = "";
-            if (users[idx_user].userId == current_user_id) {
-                renderChat([{
-                    message: message,
-                    senderId: current_user_id
-                }]);
-            }
+            renderChat([{
+                message: message,
+                senderId: current_user_id
+            }]);
             
             socket.emit("sendMessage",token,current_direct,rec,message,(response)=>{
                 console.log('sendMessage',response);
@@ -366,32 +364,6 @@
             }    
         });
 
-        // document.getElementById("gc-btn").addEventListener('click',()=>{
-        //     const token = document.getElementById("t-box").value;
-        //     const id = document.getElementById("gi-box").value;
-        //     const color = document.getElementById("c-box").value;
-        //     socket.emit("setBackground",token,id,color,(response)=>{
-        //         print('setBackground',response);
-        //     });
-        // });
-
-        // document.getElementById("gi-btn").addEventListener('click',()=>{
-        //     const token = document.getElementById("t-box").value;
-        //     const id = document.getElementById("gi-box").value;
-        //     socket.emit("joinGroup",token,id,(response)=>{
-        //         print('joinGroup',response);
-        //     });
-        // });
-
-        // document.getElementById("h-btn").addEventListener('click',()=>{
-        //     const token = document.getElementById("t-box").value;
-        //     const id = document.getElementById("h-box").value;
-        //     const d2 = document.getElementById("d2-box").value == "1";
-        //     socket.emit("getMessages",token,d2,id,(response)=>{
-        //         print('getMessages',response);
-        //     });
-        // });
-
         // lobby zone
         var lobby_zone = document.getElementById("lobby")
         var group_data;
@@ -410,24 +382,37 @@
                 }
                 groupchat_box.addEventListener("click", function() {
                     let id = groupData[idx_lobby].groupId;
+                    let isJoined = groupData[idx_lobby].isJoined;
                     current_reciever_id = id;
                     current_direct = false;
                     chatName.innerHTML = groupData[idx_lobby].groupName;
-                    socket.emit("joinGroup", token, id, (response) => {
-                        console.log(response)
-                        if (response.status == 200) {
-                            for (let idx_group in groups) {
-                                if (groups[idx_group].groupId == id) {
-                                    groups[idx_group].isJoined = true;
-                                    break;
+                    if (isJoined) {
+                        socket.emit("getMessages", token, false, id, (response) => {
+                            if (response.status == 200) {
+                                renderChat(response.messages, true);
+                            }
+                        })
+                    } else {
+                        socket.emit("joinGroup", token, id, (response) => {
+                            if (response.status == 200) {
+                                for (let idx_group in groups) {
+                                    if (groups[idx_group].groupId == id) {
+                                        groups[idx_group].isJoined = true;
+                                        break;
+                                    }
                                 }
+                                while(lobby.firstChild){
+                                    lobby.removeChild(lobby.firstChild);
+                                }
+                                renderLobby(groups, users);
+                                socket.emit("getMessages", token, false, id, (response) => {
+                                    if (response.status == 200) {
+                                        renderChat(response.messages, true);
+                                    }
+                                });
                             }
-                            while(lobby.firstChild){
-                                lobby.removeChild(lobby.firstChild);
-                            }
-                            renderLobby(groups, users);
-                        }
-                    });
+                        });
+                    }
                 });
                 lobby_zone.appendChild(groupchat_box);
             };
