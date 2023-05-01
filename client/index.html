@@ -152,6 +152,7 @@
         var to_login_btn = document.getElementById("to-login-btn");
         var to_regist_btn = document.getElementById("to-regist-btn");
 
+        var my_id;
         var chatName = document.getElementById("chat-name")
         var users;
         var groups;
@@ -167,6 +168,7 @@
                 socket.emit('login',username,password,(response)=>{
                 if(response.status == 200){
                     current_user_id = response.auth.userId;
+                    my_id = response.auth.userId;
                     localStorage.setItem("t-box", response.auth.token);
 
                     to_login_btn.style.display = "none";
@@ -210,6 +212,7 @@
                 if(response.status == 200 && username && nickname && password){
                     localStorage.setItem("t-box", response.auth.token);
 
+                    my_id = response.auth.userId;
                     socket.emit('getUsers',(response)=>{
                         const users_response = response;
                         const token = localStorage.getItem("t-box");
@@ -452,7 +455,6 @@
         }
 
         // chat zone
-        var my_id = "test1"
         var chat_zone = document.getElementById("display-message")
         function renderChat(data, clear=false) {
             if (clear) {
@@ -487,7 +489,7 @@
                 message_zone.appendChild(message_box);
                 message_zone.appendChild(time_box);
                 message_zone.classList.add("chat-zone", "w3-margin-bottom");
-                if (data[idx].sender == my_id) {
+                if (data[idx].senderId == my_id) {
                     message_box.classList.add("w3-light-grey");
                     message_zone.classList.add("w3-right");
                 }
