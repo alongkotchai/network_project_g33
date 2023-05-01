@@ -145,7 +145,7 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io.connect("ws://localhost:5001");
+        const socket = io.connect("ws://192.168.1.34:5001");
 
         var to_logout_btn = document.getElementById('to-logout-btn');
         var to_nick_btn = document.getElementById('to-nick-btn');
@@ -297,6 +297,7 @@
             socket.emit('logout',token,(response)=>{
                 console.log(response);
                 if(response.status == 200){
+                    renderChat([]);
                     var lobby = document.getElementById('lobby')
                     while(lobby.firstChild){
                         lobby.removeChild(lobby.firstChild);
@@ -320,11 +321,12 @@
             const rec = current_reciever_id;
             const message = document.getElementById("ms-box").value;
             document.getElementById("ms-box").value = "";
-            renderChat([{
-                message: message,
-                senderId: current_user_id
-            }]);
-            
+            if (current_direct) {
+                renderChat([{
+                    message: message,
+                    senderId: current_user_id
+                }]);
+            }
             socket.emit("sendMessage",token,current_direct,rec,message,(response)=>{
                 console.log('sendMessage',response);
             });
