@@ -402,13 +402,32 @@
                 var chat_name = document.createElement("span");
                 chat_name.textContent = groupData[idx_lobby].groupName ;
                 groupchat_box.appendChild(chat_name);
-                groupchat_box.classList.add("w3-button", "w3-teal");
+                groupchat_box.classList.add("w3-button");
+                if (groupData[idx_lobby].isJoined) {
+                    groupchat_box.classList.add("w3-teal");
+                } else {
+                    groupchat_box.classList.add("w3-grey");
+                }
                 groupchat_box.addEventListener("click", function() {
                     let id = groupData[idx_lobby].groupId;
                     current_reciever_id = id;
                     current_direct = false;
                     chatName.innerHTML = groupData[idx_lobby].groupName;
-                    console.log(current_reciever_id);
+                    socket.emit("joinGroup", token, id, (response) => {
+                        console.log(response)
+                        if (response.status == 200) {
+                            for (let idx_group in groups) {
+                                if (groups[idx_group].groupId == id) {
+                                    groups[idx_group].isJoined = true;
+                                    break;
+                                }
+                            }
+                            while(lobby.firstChild){
+                                lobby.removeChild(lobby.firstChild);
+                            }
+                            renderLobby(groups, users);
+                        }
+                    });
                 });
                 lobby_zone.appendChild(groupchat_box);
             };
@@ -509,8 +528,8 @@
         socket.on("newUser", (...args) => {
             const m = args[0];
             console.log(m);
-            while(lobby.firstChild){
-                lobby.removeChild(lobby.firstChild);
+            while(lobby.lastChild){
+                lobby.removeChild(lobby.lastChild);
             }
             socket.emit('getUsers',(response)=>{
                 const users_response = response;
