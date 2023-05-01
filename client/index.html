@@ -145,7 +145,7 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io.connect("ws://192.168.43.44:5001");
+        const socket = io.connect("ws://localhost:5001");
 
         var to_logout_btn = document.getElementById('to-logout-btn');
         var to_nick_btn = document.getElementById('to-nick-btn');
@@ -320,14 +320,11 @@
             const rec = current_reciever_id;
             const message = document.getElementById("ms-box").value;
             document.getElementById("ms-box").value = "";
-            for (let idx_user in users) {
-                if (users[idx_user].userId == current_user_id) {
-                    renderChat([{
-                        message: message,
-                        sender: users[idx_user].nickname
-                    }]);
-                    break;
-                }
+            if (users[idx_user].userId == current_user_id) {
+                renderChat([{
+                    message: message,
+                    senderId: current_user_id
+                }]);
             }
             
             socket.emit("sendMessage",token,current_direct,rec,message,(response)=>{
@@ -399,6 +396,7 @@
         var lobby_zone = document.getElementById("lobby")
         var group_data;
         function renderLobby(groupData, userData){
+            const token = localStorage.getItem("t-box");
             for(let idx_lobby in groupData) {
                 var groupchat_box = document.createElement("button");
                 var chat_name = document.createElement("span");
@@ -434,6 +432,11 @@
                     current_reciever_id = id;
                     current_direct = true;
                     chatName.innerHTML = userData[idx_user].nickname + "(Direct Message)";
+                    socket.emit('getMessages', token, true, id, (response) => {
+                        if (response.status == 200) {
+                            renderChat(response.messages, true);
+                        }
+                    });
                     console.log(current_reciever_id, current_direct);
                 });
                 lobby_zone.appendChild(user_box);
@@ -449,21 +452,31 @@
                     chat_zone.removeChild(chat_zone.lastChild)
                 }
             }
-            for (var idx in data) {
+            for (let idx in data) {
                 var message_zone = document.createElement("div")
                 var sender_box = document.createElement("span")
                 var message_box = document.createElement("div")
-                sender_box.textContent = data[idx].sender
-                message_box.textContent = data[idx].message
-                message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large")
-                message_zone.appendChild(sender_box)
-                message_zone.appendChild(message_box)
-                message_zone.classList.add("chat-zone", "w3-margin-bottom")
-                if (data[idx].sender == my_id) {
-                    message_box.classList.add("w3-light-grey")
-                    message_zone.classList.add("w3-right")
+
+                let sender_nickname = "";
+                for (let idx_user in users) {
+                    if (users[idx_user].userId == data[idx].senderId) {
+                        sender_nickname = users[idx_user].nickname;
+                        break;
+                    }
                 }
-                chat_zone.appendChild(message_zone)
+
+                sender_box.textContent = sender_nickname;
+                message_box.textContent = data[idx].message;
+                message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large");
+                message_zone.appendChild(sender_box);
+                message_zone.appendChild(message_box);
+                message_zone.classList.add("chat-zone", "w3-margin-bottom");
+                if (data[idx].sender == my_id) {
+                    message_box.classList.add("w3-light-grey");
+                    message_zone.classList.add("w3-right");
+                }
+                chat_zone.appendChild(message_zone);
+                message_zone.scrollTo();
             }
         }
 
@@ -490,18 +503,7 @@
 
         socket.on("directMessage", (...args) => {
             const m = args[0];
-            let sender_nickname = "";
-            console.log(args)
-            for (let idx_user in users) {
-                if (users[idx_user].userId == m.senderId) {
-                    sender_nickname = users[idx_user].nickname;
-                    break;
-                }
-            }
-            renderChat([{
-                message: m.message,
-                sender: sender_nickname
-            }]);
+            renderChat([m]);
         });
 
         socket.on("newUser", (...args) => {
