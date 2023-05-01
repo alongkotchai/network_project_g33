@@ -449,31 +449,41 @@
                     chat_zone.removeChild(chat_zone.lastChild)
                 }
             }
+
+            let last_sender_id = -1;
             for (let idx in data) {
                 message_log.push(data[idx])
                 var message_zone = document.createElement("div")
-                var sender_box = document.createElement("span")
                 var message_box = document.createElement("div")
-                var time_box = document.createElement("span")
+                
 
-                let sender_nickname = "";
-                for (let idx_user in users) {
-                    if (users[idx_user].userId == data[idx].senderId) {
-                        sender_nickname = users[idx_user].nickname;
-                        break;
+                if (data[idx].senderId != last_sender_id) {
+                    var sender_box = document.createElement("span")
+                    let sender_nickname = "";
+                    for (let idx_user in users) {
+                        if (users[idx_user].userId == data[idx].senderId) {
+                            sender_nickname = users[idx_user].nickname;
+                            break;
+                        }
                     }
+                    sender_box.textContent = sender_nickname;
+                    message_zone.appendChild(sender_box);
                 }
+                
 
+                
+
+                message_box.textContent = data[idx].message;
+                message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large", "message-box");
+                
+                message_zone.appendChild(message_box);
+
+                var time_box = document.createElement("span");
+                time_box.classList.add("timestamp");
                 let timemillisec = Date.parse(data[idx].timestamp) + 7*60*60*1000;
                 time_box.textContent = new Date(timemillisec).toString().slice(4,-24);
-
-                sender_box.textContent = sender_nickname;
-                message_box.textContent = data[idx].message;
-                message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large");
-                
-                message_zone.appendChild(sender_box);
-                message_zone.appendChild(message_box);
                 message_zone.appendChild(time_box);
+                
                 message_zone.classList.add("chat-zone", "w3-margin-bottom");
                 if (data[idx].senderId == my_id) {
                     message_box.classList.add("w3-light-grey");
@@ -481,6 +491,7 @@
                 }
                 chat_zone.appendChild(message_zone);
                 message_zone.scrollIntoView();
+                last_sender_id = data[idx].senderId;
             }
         }
 
