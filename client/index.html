@@ -477,10 +477,10 @@
                 message_zone.classList.add("chat-zone", "w3-margin-bottom");
                 if (data[idx].senderId == my_id) {
                     message_box.classList.add("w3-light-grey");
-                    message_zone.classList.add("w3-right");
+                    message_zone.classList.add("w3-right", "me");
                 }
                 chat_zone.appendChild(message_zone);
-                message_zone.scrollTo();
+                message_zone.scrollIntoView();
             }
         }
 
