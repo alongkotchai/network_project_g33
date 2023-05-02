@@ -128,6 +128,7 @@
         </div>
         <div id="message">  
             <div id="display-message" class="w3-padding"></div>
+            <div id="is-typing" class="w3-padding"></div>
             <div id="message-bottom" class="w3-padding w3-border-top">
                 <div id="color-picker">
                     <label for="colorPicker">Choose a color: <code id="colorCode"></code> </label>
@@ -163,6 +164,7 @@
 
         var input_message_box = document.getElementById("ms-box");
         var last_message_value = "";
+        var is_typing_box = document.getElementById("is-typing");
 
         input_message_box.addEventListener("change", () => {
             let new_message = input_message_box.value;
@@ -233,7 +235,8 @@
             const nickname = document.getElementById("regist-n").value;
             const password = document.getElementById("regist-p").value;
             socket.emit('register',username,password,nickname,(response)=>{
-                if(response.status == 200){    
+                if(response.status == 200){
+                    current_user_id = response.auth.userId;
                     localStorage.setItem("t-box", response.auth.token);
 
                     my_id = response.auth.userId;
@@ -403,6 +406,7 @@
                     groupchat_box.classList.add("w3-grey");
                 }
                 groupchat_box.addEventListener("click", function() {
+                    is_typing_box.textContent = "";
                     colorButton.disabled = false;
                     let id = groupData[idx_lobby].groupId;
                     let isJoined = groupData[idx_lobby].isJoined;
@@ -468,6 +472,7 @@
                 user_box.appendChild(user_name);
                 user_box.classList.add("w3-button", "w3-grey");
                 user_box.addEventListener("click", () => {
+                    is_typing_box.textContent = "";
                     colorButton.disabled = true;
                     document.getElementById("display-message").style.backgroundColor = "azure";
                     document.getElementById("message").style.backgroundColor = "azure";
@@ -671,6 +676,15 @@
                 document.getElementById("display-message").style.backgroundColor = m.color;
                 document.getElementById("message").style.backgroundColor = m.color;
                 document.getElementById("message-bottom").style.backgroundColor = m.color;
+            }
+        });
+
+        socket.on("isTyping", (...args) => {
+            const m = args[0];
+            if (m.typing) {
+                is_typing_box.textContent = "someone is typing";
+            } else {
+                is_typing_box.textContent = "";
             }
         });
 
