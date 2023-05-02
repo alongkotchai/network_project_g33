@@ -166,20 +166,6 @@
         var last_message_value = "";
         var is_typing_box = document.getElementById("is-typing");
 
-        input_message_box.addEventListener("change", () => {
-            let new_message = input_message_box.value;
-            if (last_message_value == "" && new_message != "") {
-                socket.emit("sendIsTyping", token, current_direct, current_reciever_id, true, (reponse) => {
-                    console.log(reponse)
-                })
-            } else if (last_message_value != "" && new_message == "") {
-                socket.emit("sendIsTyping", token, current_direct, current_reciever_id, false, (reponse) => {
-                    console.log(reponse)
-                })
-            }
-            last_message_value = new_message
-        })
-
         input_message_box.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -237,6 +223,7 @@
             socket.emit('register',username,password,nickname,(response)=>{
                 if(response.status == 200){
                     current_user_id = response.auth.userId;
+                    my_id = response.auth.userId;
                     localStorage.setItem("t-box", response.auth.token);
 
                     my_id = response.auth.userId;

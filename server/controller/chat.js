@@ -41,21 +41,3 @@ exports.getMessageHistory = async(isDirect, receiverId, senderId) =>{
     }
   return messageList;
 };
-
-exports.sendIsTyping = async(io,senderId, receiverId, typing, isDirect) => {
-    if(isDirect){
-        const target = getUserFromId(receiverId);
-        const onSocketId = getSocktFromUserId(receiverId);
-        if(target){
-            if(onSocketId){
-                io.to(onSocketId).emit("isTyping",{senderId:senderId, typing:typing});
-            }
-            return true;
-        }
-    }else{
-        if(IsUserInGroup(receiverId,senderId)){
-            io.in('g:' + receiverId.toString()).emit("isTypingGroup",{senderId:senderId,groupId:receiverId, typing:typing});
-            return true;
-        }
-    }
-}
