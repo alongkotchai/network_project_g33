@@ -232,12 +232,12 @@
             const username = document.getElementById("regist-u").value;
             const nickname = document.getElementById("regist-n").value;
             const password = document.getElementById("regist-p").value;
-            socket.emit('register',username,password,nickname,(response)=>{
-                if(response.status == 200 && username && nickname && password){
-                    localStorage.setItem("t-box", response.auth.token);
+            if(response.status == 200 && username && nickname && password){
+                socket.emit('register',username,password,nickname,(response)=>{
+                localStorage.setItem("t-box", response.auth.token);
 
-                    my_id = response.auth.userId;
-                    socket.emit('getUsers',(response)=>{
+                my_id = response.auth.userId;
+                socket.emit('getUsers',(response)=>{
                         const users_response = response;
                         const token = localStorage.getItem("t-box");
                         socket.emit('getGroups',token,(groups_response)=>{
@@ -248,7 +248,7 @@
                             renderLobby(groups_response.groups, users_response.users);
                         });         
                     });
-
+                });
                     var regist_pop = document.getElementById("regist-pop");
                     regist_pop.style.display = "none" ;
 
@@ -262,16 +262,16 @@
                     document.getElementById("regist-n").value = "";
 
                     document.getElementById("regist-msg").innerHTML = "";
-                } else {
-                    document.getElementById("regist-msg").innerHTML = "pls enter all data above";
+            } else {
+                document.getElementById("regist-msg").innerHTML = "pls enter all data above";
 
-                    document.getElementById("regist-u").value = "";
-                    document.getElementById("regist-p").value = "";
-                    document.getElementById("regist-n").value = "";
-                }
-                console.log(response);
-            });
+                document.getElementById("regist-u").value = "";
+                document.getElementById("regist-p").value = "";
+                document.getElementById("regist-n").value = "";
+            }
+            console.log(response);
         });
+
 
         document.getElementById("nick-btn").addEventListener('click',()=>{
             const token = localStorage.getItem("t-box");
