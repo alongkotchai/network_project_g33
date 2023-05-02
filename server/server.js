@@ -1,12 +1,12 @@
 const { Server } = require("socket.io");
 const {authToken, authUser, getAllUsers, registerUser, logoutUser, setNickname, getUserIdFromAuth } = require('./controller/user');
-const {sendMessage, getMessageHistory} = require('./controller/chat');
+const {sendMessage, getMessageHistory, sendIsTyping} = require('./controller/chat');
 const {getGroups, createGroup, joinGroup, changeGroupColor} = require('./controller/group');
 
 const io = new Server({ 
     //allow frontend cors 
     cors: {
-    origin: "http://localhost:5500"
+      origin: ["http://192.168.43.44:5500", "http://localhost:5500"]
     } 
 });
 
@@ -156,6 +156,20 @@ io.on("connection", (socket) => {
       const timestamp = await sendMessage(io, userId, receiverId, message, isDirect)
       if(timestamp){
         response({status:200,timestamp:timestamp});
+      }else{
+        response({status:400, message:'fail to send message'});
+      }
+    }
+  });
+
+  socket.on('sendIsTyping', async(token, isDirect, receiverId, typing, response) => {
+    const userId = getUserIdFromAuth(token,socket.id);
+    if(!userId){
+      response({status:400, message:'not authorize'});
+    }else{
+      const success = await sendIsTyping(io, userId, receiverId, typing, isDirect)
+      if(success){
+        response({status:200});
       }else{
         response({status:400, message:'fail to send message'});
       }
