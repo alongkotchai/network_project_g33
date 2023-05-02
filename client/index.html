@@ -161,7 +161,24 @@
         var current_direct = false;
         var message_log = [];
 
-        document.getElementById("ms-box").addEventListener("keypress", function(event) {
+        var input_message_box = document.getElementById("ms-box");
+        var last_message_value = "";
+
+        input_message_box.addEventListener("change", () => {
+            let new_message = input_message_box.value;
+            if (last_message_value == "" && new_message != "") {
+                socket.emit("sendIsTyping", token, current_direct, current_reciever_id, true, (reponse) => {
+                    console.log(reponse)
+                })
+            } else if (last_message_value != "" && new_message == "") {
+                socket.emit("sendIsTyping", token, current_direct, current_reciever_id, false, (reponse) => {
+                    console.log(reponse)
+                })
+            }
+            last_message_value = new_message
+        })
+
+        input_message_box.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
                 document.getElementById("send-btn").click();
