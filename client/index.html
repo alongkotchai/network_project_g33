@@ -145,7 +145,7 @@
 
     <script type="module">
         import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io.connect("ws://192.168.1.34:5001");
+        const socket = io.connect("ws://192.168.43.44:5001");
 
         var to_logout_btn = document.getElementById('to-logout-btn');
         var to_nick_btn = document.getElementById('to-nick-btn');
@@ -461,8 +461,7 @@
                 var message_zone = document.createElement("div")
                 var message_box = document.createElement("div")
                 
-
-                if (data[idx].senderId != last_sender_id) {
+                if (data[idx].senderId != last_sender_id){
                     var sender_box = document.createElement("span")
                     let sender_nickname = "";
                     for (let idx_user in users) {
@@ -474,20 +473,32 @@
                     sender_box.textContent = sender_nickname;
                     message_zone.appendChild(sender_box);
                 }
-                
-
-                
-
+                         
                 message_box.textContent = data[idx].message;
                 message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large", "message-box");
                 
                 message_zone.appendChild(message_box);
 
-                var time_box = document.createElement("span");
-                time_box.classList.add("timestamp");
-                let timemillisec = Date.parse(data[idx].timestamp) + 7*60*60*1000;
-                time_box.textContent = new Date(timemillisec).toString().slice(4,-24);
-                message_zone.appendChild(time_box);
+                
+                idx = parseInt(idx)
+                console.log(idx)
+                if(idx >= 0 && idx+1 < data.length)
+                {
+                    if(Date.parse(data[idx+1].timestamp) - Date.parse(data[idx].timestamp) > 30*1000 || data[idx+1].senderId != data[idx].senderId){
+                        var time_box = document.createElement("span");
+                        time_box.classList.add("timestamp");
+                        let timemillisec = Date.parse(data[idx].timestamp) + 7*60*60*1000;
+                        time_box.textContent = new Date(timemillisec).toString().slice(4,-24);
+                        message_zone.appendChild(time_box);
+                    }
+                }
+                if(idx == data.length-1){
+                    var time_box = document.createElement("span");
+                    time_box.classList.add("timestamp");
+                    let timemillisec = Date.parse(data[idx].timestamp) + 7*60*60*1000;
+                    time_box.textContent = new Date(timemillisec).toString().slice(4,-24);
+                    message_zone.appendChild(time_box);
+                }
                 
                 message_zone.classList.add("chat-zone", "w3-margin-bottom");
                 if (data[idx].senderId == my_id) {
