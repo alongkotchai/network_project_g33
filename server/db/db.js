@@ -1,5 +1,6 @@
 const sqlite3 = require("sqlite3").verbose();
-const {open} = require("sqlite")
+const {open} = require("sqlite");
+const bcrypt = require("bcrypt");
 
 // open the database
 async function openDb () {
@@ -49,11 +50,13 @@ console.log("Connected to the app database.");
 exports.CreateUser = async(u_name, n_name, pass) => {
   console.log('create user');
   try{
+    console.log(pass);
+    const hash = await bcrypt.hash(pass, 10);
     const db = await openDb();
     const result = await db.run(
           `INSERT INTO users(username,nickname,password) 
             VALUES(?,?,?)`,
-          [u_name, n_name, pass]
+          [u_name, n_name, hash]
     );
     return result.lastID;
   }catch(err){console.log(err);}
@@ -77,12 +80,12 @@ exports.CheckUser = async(username, password) => {
   try{
     const db = await openDb();
     const result = await db.get(
-          `SELECT user_id, username, nickname FROM users 
-            WHERE username = ? 
-            AND password = ?`,
-          [username, password]
+          `SELECT * FROM users 
+            WHERE username = ? `,
+          [username,]
     );
-    return (result)? result: false;
+    if(!result) return false;
+    return await bcrypt.compare(password, result.password);
   }catch(err){console.log(err);}
 };
 
