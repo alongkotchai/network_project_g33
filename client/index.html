@@ -345,7 +345,8 @@
                         senderId: current_user_id,
                         timestamp: response.timestamp
                     };
-                    renderChat([new_message]);
+                    message_log.push(new_message)
+                    renderChat(message_log, true);
                 }
             });
         });
@@ -583,7 +584,8 @@
 
         socket.on("directMessage", (...args) => {
             const m = args[0];
-            renderChat([m]);
+            message_log.push(m);
+            renderChat(message_log, true);
         });
 
         socket.on("newUser", (...args) => {
@@ -651,7 +653,8 @@
         socket.on("groupMessage", (...args) => {
             const m = args[0];
             if ((!current_direct) && m.groupId == current_reciever_id) {
-                renderChat([m]);
+                message_log.push(m);
+                renderChat(message_log, true);
             }
         });
 
