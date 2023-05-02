@@ -161,6 +161,13 @@
         var current_direct = false;
         var message_log = [];
 
+        document.getElementById("ms-box").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("send-btn").click();
+            }
+        });
+
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("login-u").value;
             const password = document.getElementById("login-p").value;
