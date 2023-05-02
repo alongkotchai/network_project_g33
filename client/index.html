@@ -232,12 +232,12 @@
             const username = document.getElementById("regist-u").value;
             const nickname = document.getElementById("regist-n").value;
             const password = document.getElementById("regist-p").value;
-            if(response.status == 200 && username && nickname && password){
-                socket.emit('register',username,password,nickname,(response)=>{
-                localStorage.setItem("t-box", response.auth.token);
+            socket.emit('register',username,password,nickname,(response)=>{
+                if(response.status == 200){    
+                    localStorage.setItem("t-box", response.auth.token);
 
-                my_id = response.auth.userId;
-                socket.emit('getUsers',(response)=>{
+                    my_id = response.auth.userId;
+                    socket.emit('getUsers',(response)=>{
                         const users_response = response;
                         const token = localStorage.getItem("t-box");
                         socket.emit('getGroups',token,(groups_response)=>{
@@ -246,9 +246,9 @@
                             users = users_response.users;
                             groups = groups_response.groups;
                             renderLobby(groups_response.groups, users_response.users);
-                        });         
-                    });
-                });
+                        })    
+                    })
+                
                     var regist_pop = document.getElementById("regist-pop");
                     regist_pop.style.display = "none" ;
 
@@ -270,7 +270,8 @@
                 document.getElementById("regist-n").value = "";
             }
             console.log(response);
-        });
+        })
+    })
 
 
         document.getElementById("nick-btn").addEventListener('click',()=>{
