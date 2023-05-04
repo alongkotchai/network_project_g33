@@ -74,6 +74,7 @@ exports.getAllUsers = async() =>{
 
 //emit 'newUser' event
 exports.registerUser = async(username, nickname, password, socket) =>{
+    if (username == "" || nickname == "" || password == "") return undefined;
     const id = await CreateUser(username,nickname,password);
     if(id){
         deleteSession(socket.id);

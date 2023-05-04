@@ -30,7 +30,7 @@
                   <label><b>Password</b></label>
                   <input id="login-p" class="w3-input w3-border w3-margin-bottom" type="password" placeholder="Enter Password" required>
                   <label id="login-msg"></label>
-                  <button id="login-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Login</button>
+                  <button id="login-btn" class="w3-button w3-block w3-teal w3-section w3-padding" type="submit">Login</button>
                 </div>
               </div>
             </div>
@@ -55,7 +55,7 @@
                   <label><b>Nickname</b></label>
                   <input id="regist-n" class="w3-input w3-border" type="text" placeholder="Enter Nickname" name="nckname" required>
                   <label id="regist-msg"></label>
-                  <button id="regist-btn" class="w3-button w3-block w3-green w3-section w3-padding">Register</button>
+                  <button id="regist-btn" class="w3-button w3-block w3-teal w3-section w3-padding">Register</button>
                 </div>
               </div>
             </div>
@@ -76,7 +76,7 @@
                   <label><b>New Nickname</b></label>
                   <input id="nickname-n" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Nickname" name="nckname" required>
                   <label id="nick-msg"></label>
-                  <button id="nick-btn" class="w3-button w3-block w3-green w3-section w3-padding" type="submit">Change Nickname</button>
+                  <button id="nick-btn" class="w3-button w3-block w3-teal w3-section w3-padding" type="submit">Change Nickname</button>
                 </div>
               </div>
             </div>
@@ -94,7 +94,7 @@
               <div class="w3-container">
                 <div class="w3-section">
                   <h2>Are you sure to logout?</h2>
-                  <button id="logout-btn" class="w3-button w3-block w3-green w3-section w3-padding">Logout!!!</button>
+                  <button id="logout-btn" class="w3-button w3-block w3-teal w3-section w3-padding">Logout!!!</button>
                 </div>
               </div>
             </div>
@@ -114,7 +114,7 @@
                 <label><b>New Group Name</b></label>
                 <input id="addgroup-n" class="w3-input w3-border w3-margin-bottom" type="text" placeholder="Enter New Group Name" name="grpname" required>
                 <label id="addgroup-msg"></label>
-                <button id="addgroup-btn" class="w3-button w3-block w3-green w3-section w3-padding">Add Group</button>
+                <button id="addgroup-btn" class="w3-button w3-block w3-teal w3-section w3-padding">Add Group</button>
               </div>
             </div>
           </div>
@@ -128,6 +128,7 @@
         </div>
         <div id="message">  
             <div id="display-message" class="w3-padding"></div>
+            <div id="is-typing" class="w3-padding"></div>
             <div id="message-bottom" class="w3-padding w3-border-top">
                 <div id="color-picker">
                     <label for="colorPicker">Choose a color: <code id="colorCode"></code> </label>
@@ -160,6 +161,17 @@
         var current_reciever_id;
         var current_direct = false;
         var message_log = [];
+
+        var input_message_box = document.getElementById("ms-box");
+        var last_message_value = "";
+        var is_typing_box = document.getElementById("is-typing");
+
+        input_message_box.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("send-btn").click();
+            }
+        });
 
         document.getElementById("login-btn").addEventListener('click',()=>{
             const username = document.getElementById("login-u").value;
@@ -209,7 +221,9 @@
             const nickname = document.getElementById("regist-n").value;
             const password = document.getElementById("regist-p").value;
             socket.emit('register',username,password,nickname,(response)=>{
-                if(response.status == 200 && username && nickname && password){
+                if(response.status == 200){
+                    current_user_id = response.auth.userId;
+                    my_id = response.auth.userId;
                     localStorage.setItem("t-box", response.auth.token);
 
                     my_id = response.auth.userId;
@@ -222,9 +236,9 @@
                             users = users_response.users;
                             groups = groups_response.groups;
                             renderLobby(groups_response.groups, users_response.users);
-                        });         
-                    });
-
+                        })    
+                    })
+                
                     var regist_pop = document.getElementById("regist-pop");
                     regist_pop.style.display = "none" ;
 
@@ -238,16 +252,17 @@
                     document.getElementById("regist-n").value = "";
 
                     document.getElementById("regist-msg").innerHTML = "";
-                } else {
-                    document.getElementById("regist-msg").innerHTML = "pls enter all data above";
+            } else {
+                document.getElementById("regist-msg").innerHTML = "pls enter all data above";
 
-                    document.getElementById("regist-u").value = "";
-                    document.getElementById("regist-p").value = "";
-                    document.getElementById("regist-n").value = "";
-                }
-                console.log(response);
-            });
-        });
+                document.getElementById("regist-u").value = "";
+                document.getElementById("regist-p").value = "";
+                document.getElementById("regist-n").value = "";
+            }
+            console.log(response);
+        })
+    })
+
 
         document.getElementById("nick-btn").addEventListener('click',()=>{
             const token = localStorage.getItem("t-box");
@@ -321,7 +336,8 @@
                         senderId: current_user_id,
                         timestamp: response.timestamp
                     };
-                    renderChat([new_message]);
+                    message_log.push(new_message)
+                    renderChat(message_log, true);
                 }
             });
         });
@@ -377,6 +393,7 @@
                     groupchat_box.classList.add("w3-grey");
                 }
                 groupchat_box.addEventListener("click", function() {
+                    is_typing_box.textContent = "";
                     colorButton.disabled = false;
                     let id = groupData[idx_lobby].groupId;
                     let isJoined = groupData[idx_lobby].isJoined;
@@ -442,6 +459,7 @@
                 user_box.appendChild(user_name);
                 user_box.classList.add("w3-button", "w3-grey");
                 user_box.addEventListener("click", () => {
+                    is_typing_box.textContent = "";
                     colorButton.disabled = true;
                     document.getElementById("display-message").style.backgroundColor = "azure";
                     document.getElementById("message").style.backgroundColor = "azure";
@@ -480,8 +498,7 @@
                 var message_zone = document.createElement("div")
                 var message_box = document.createElement("div")
                 
-
-                if (data[idx].senderId != last_sender_id) {
+                if (data[idx].senderId != last_sender_id){
                     var sender_box = document.createElement("span")
                     let sender_nickname = "";
                     for (let idx_user in users) {
@@ -493,20 +510,32 @@
                     sender_box.textContent = sender_nickname;
                     message_zone.appendChild(sender_box);
                 }
-                
-
-                
-
+                         
                 message_box.textContent = data[idx].message;
                 message_box.classList.add("w3-card", "w3-blue", "w3-padding", "w3-round-large", "message-box");
                 
                 message_zone.appendChild(message_box);
 
-                var time_box = document.createElement("span");
-                time_box.classList.add("timestamp");
-                let timemillisec = Date.parse(data[idx].timestamp) + 7*60*60*1000;
-                time_box.textContent = new Date(timemillisec).toString().slice(4,-24);
-                message_zone.appendChild(time_box);
+                
+                idx = parseInt(idx)
+                console.log(idx)
+                if(idx >= 0 && idx+1 < data.length)
+                {
+                    if(Date.parse(data[idx+1].timestamp) - Date.parse(data[idx].timestamp) > 30*1000 || data[idx+1].senderId != data[idx].senderId){
+                        var time_box = document.createElement("span");
+                        time_box.classList.add("timestamp");
+                        let timemillisec = Date.parse(data[idx].timestamp) + 7*60*60*1000;
+                        time_box.textContent = new Date(timemillisec).toString().slice(4,-24);
+                        message_zone.appendChild(time_box);
+                    }
+                }
+                if(idx == data.length-1){
+                    var time_box = document.createElement("span");
+                    time_box.classList.add("timestamp");
+                    let timemillisec = Date.parse(data[idx].timestamp) + 7*60*60*1000;
+                    time_box.textContent = new Date(timemillisec).toString().slice(4,-24);
+                    message_zone.appendChild(time_box);
+                }
                 
                 message_zone.classList.add("chat-zone", "w3-margin-bottom");
                 if (data[idx].senderId == my_id) {
@@ -548,26 +577,31 @@
 
         socket.on("directMessage", (...args) => {
             const m = args[0];
-            renderChat([m]);
+            if (m.senderId == current_reciever_id && current_direct) {
+                message_log.push(m);
+                renderChat(message_log, true); 
+            }
         });
 
         socket.on("newUser", (...args) => {
-            const m = args[0];
-            console.log(m);
-            while(lobby.lastChild){
-                lobby.removeChild(lobby.lastChild);
+            if (current_user_id) {
+              const m = args[0];
+                console.log(m);
+                while(lobby.lastChild){
+                    lobby.removeChild(lobby.lastChild);
+                }
+                socket.emit('getUsers',(response)=>{
+                    const users_response = response;
+                    const token = localStorage.getItem("t-box");
+                    socket.emit('getGroups',token,(groups_response)=>{
+                        console.log(groups_response.groups);
+                        console.log(users_response.users);
+                        users = users_response.users;
+                        groups = groups_response.groups;
+                        renderLobby(groups_response.groups, users_response.users);
+                    });         
+                });  
             }
-            socket.emit('getUsers',(response)=>{
-                const users_response = response;
-                const token = localStorage.getItem("t-box");
-                socket.emit('getGroups',token,(groups_response)=>{
-                    console.log(groups_response.groups);
-                    console.log(users_response.users);
-                    users = users_response.users;
-                    groups = groups_response.groups;
-                    renderLobby(groups_response.groups, users_response.users);
-                });         
-            });
         });
 
         socket.on("userChangeNickname", (...args) => {
@@ -616,7 +650,8 @@
         socket.on("groupMessage", (...args) => {
             const m = args[0];
             if ((!current_direct) && m.groupId == current_reciever_id) {
-                renderChat([m]);
+                message_log.push(m);
+                renderChat(message_log, true);
             }
         });
 

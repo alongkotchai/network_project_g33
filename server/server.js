@@ -6,7 +6,7 @@ const {getGroups, createGroup, joinGroup, changeGroupColor} = require('./control
 const io = new Server({ 
     //allow frontend cors 
     cors: {
-    origin: "http://localhost:5500"
+      origin: ["http://192.168.43.44:5500", "http://localhost:5500"]
     } 
 });
 
